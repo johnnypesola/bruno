@@ -1,6 +1,7 @@
 
 import React from 'react';
 import styled from 'styled-components';
+import { CardInHand } from '../App';
 
 
 export enum CardColor {
