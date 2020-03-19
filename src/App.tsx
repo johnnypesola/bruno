@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Card, { CardColor, CardValue } from './components/Card';
 import Table from './components/Table';
 import Hand from './components/Hand';
-import { getInitalHand, getRandomCard } from './utils';
+import { getInitalHand, getRandomCard, doCardsMatch } from './utils';
 import CardPile from './components/CardPile';
 import useAIPlayer from './hooks/useAIPlayer';
 import useInterval from './hooks/useInterval';
@@ -27,7 +27,7 @@ function App() {
 
   const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number) => {
 
-    if (cardInHand.color == topCard.color || cardInHand.value == topCard.value){
+    if (doCardsMatch(cardInHand, topCard)){
       setTopCard(cardInHand);
       cardsInHand.splice(cardIndex, 1);  
       setPlayerTurn(1);
