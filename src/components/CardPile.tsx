@@ -1,8 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { CardInHand } from '../App';
-import { CardColor, CardValue } from './Card';
-import { randomEnum } from '../utils';
+import { getRandomCard } from '../utils';
 
 const Container = styled.div`
     margin: 2px;
@@ -27,10 +26,6 @@ const Text = styled.div`
 
 interface ComponentProps {
     onGetCard: (newCard: CardInHand) => void
-}
-
-export const getRandomCard = (): CardInHand => {
-    return { color: randomEnum(CardColor), value: randomEnum(CardValue)}
 }
 
 const CardPile: React.FC<ComponentProps> = ({onGetCard}) => {
