@@ -24,15 +24,16 @@ export enum CardValue {
 interface ComponentProps {
   value: CardValue;
   color: CardColor;
+  isConcealed: boolean;
 }
 
-const CardContainer = styled.div<{ cardColor: CardColor }>`
+const CardContainer = styled.div<{ cardColor: CardColor; isConcealed: boolean }>`
   margin: 2px;
   display: inline-block;
   border: 6px solid white;
   border-radius: 5px;
   padding: 20px 17px;
-  background: ${props => props.cardColor};
+  background: ${({ isConcealed, cardColor }) => (isConcealed ? 'black' : cardColor)};
   position: relative;
   color: black;
   height: 60px;
@@ -40,7 +41,7 @@ const CardContainer = styled.div<{ cardColor: CardColor }>`
   user-select: none;
 `;
 
-const WhiteCircle = styled.div`
+const Circle = styled.div`
   height: 90px;
   width: 50px;
   border-radius: 50%;
@@ -63,10 +64,22 @@ const ValueContainer = styled.div<{ cardColor: CardColor }>`
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 1);
 `;
 
-const Card: React.FC<ComponentProps> = ({ color, value }) => (
-  <CardContainer cardColor={color}>
-    <WhiteCircle />
-    <ValueContainer cardColor={color}>{value}</ValueContainer>
+const Text = styled.div`
+  color: brown;
+  font-size: 12px;
+  font-weight: bold;
+  transform: rotate(12deg);
+`;
+
+const Card: React.FC<ComponentProps> = ({ color, value, isConcealed }) => (
+  <CardContainer cardColor={color} isConcealed={isConcealed}>
+    {!isConcealed && (
+      <>
+        <Circle />
+        <ValueContainer cardColor={color}>{value}</ValueContainer>
+      </>
+    )}
+    {isConcealed && <Text>Bruno</Text>}
   </CardContainer>
 );
 

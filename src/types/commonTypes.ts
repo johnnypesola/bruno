@@ -3,6 +3,7 @@ import { CardColor, CardValue } from '../components/Card';
 export interface CardInHand {
   color: CardColor;
   value: CardValue;
+  isConcealed: boolean;
 }
 
 interface Opponent {

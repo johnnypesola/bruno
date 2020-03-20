@@ -25,9 +25,11 @@ const Text = styled.div`
 `;
 
 const CardPile: React.FC = () => {
-  const { dispatch } = useContext(GameStateContext);
+  const { state, dispatch } = useContext(GameStateContext);
 
   const onClickHandler = (): void => {
+    const isPlayersTurn = state.playerTurn === -1;
+    if (!isPlayersTurn) return;
     dispatch({ name: Action.PlayerDrawsNewCard });
     dispatch({ name: Action.SetNextPlayerTurn });
   };

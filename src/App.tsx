@@ -9,16 +9,14 @@ import { GameStateContext } from '.';
 import { Action } from './types/gameStateActionTypes';
 import useAIPlayers from './hooks/useAIPlayers';
 
-interface OpponentsCardsInHand {
-  name: string;
-  cards: CardInHand[];
-}
-
 const App: React.FC = () => {
   const { state, dispatch } = useContext(GameStateContext);
   useAIPlayers();
 
   const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
+    const isPlayersTurn = state.playerTurn === -1;
+    if (!isPlayersTurn) return;
+
     if (doCardsMatch(cardInHand, state.topCard)) {
       dispatch({
         name: Action.PlayerPlaysCard,
@@ -34,19 +32,21 @@ const App: React.FC = () => {
         <Hand key={index}>
           {opponent.cards.map((card, index) => (
             <span key={index}>
-              <Card color={card.color} value={card.value} />
+              <Card color={card.color} value={card.value} isConcealed={card.isConcealed} />
             </span>
           ))}
         </Hand>
       ))}
+
       <Table>
         <CardPile />
-        <Card color={state.topCard.color} value={state.topCard.value} />
+        <Card color={state.topCard.color} value={state.topCard.value} isConcealed={false} />
       </Table>
+
       <Hand>
         {state.player.cards.map((card, index) => (
           <span key={index} onClick={() => placeCardFromHand(card, index)}>
-            <Card color={card.color} value={card.value} />
+            <Card color={card.color} value={card.value} isConcealed={card.isConcealed} />
           </span>
         ))}
       </Hand>

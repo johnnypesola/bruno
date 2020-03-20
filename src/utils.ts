@@ -8,15 +8,19 @@ export function randomEnum<T>(anEnum: T): T[keyof T] {
   return enumValues[randomIndex];
 }
 
-export const getRandomCard = (): CardInHand => {
-  return { color: randomEnum(CardColor), value: randomEnum(CardValue) };
+export const getRandomCard = (isConcealed = true): CardInHand => {
+  return {
+    color: randomEnum(CardColor),
+    value: randomEnum(CardValue),
+    isConcealed: isConcealed,
+  };
 };
 
-export const getInitialHand = (): CardInHand[] => {
+export const getInitialHand = (isConcealed = true): CardInHand[] => {
   const initialHand: CardInHand[] = [];
 
   while (initialHand.length < initialNumberOfCardsInHand) {
-    initialHand.push(getRandomCard());
+    initialHand.push(getRandomCard(isConcealed));
   }
 
   return initialHand;

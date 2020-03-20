@@ -11,7 +11,6 @@ const useAIPlayers = (): void => {
 
   // Game loop
   useInterval(() => {
-    console.log(state.playerTurn);
     const isAIPlayersTurn = state.playerTurn !== -1;
 
     if (isAIPlayersTurn) {
@@ -32,18 +31,6 @@ const useAIPlayers = (): void => {
       dispatch({ name: Action.SetNextPlayerTurn });
     }
   }, 1000);
-
-  // const playTurn = (topCard: CardInHand): void => {
-  //   const cardToPlayIndex = getMatchingCardIndex(topCard);
-
-  //   if (cardToPlayIndex !== -1) {
-  //     // actions.setTopCard(cardsInHand[cardToPlayIndex]);
-  //     setCardsInHand(cardsInHand.slice(cardToPlayIndex, 1));
-  //   } else {
-  //     const newHand = [...cardsInHand, getRandomCard()];
-  //     setCardsInHand(newHand);
-  //   }
-  // };
 };
 
 export default useAIPlayers;

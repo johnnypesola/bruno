@@ -50,7 +50,7 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
 
     if (action.name === Action.PlayerDrawsNewCard) {
-      const newCard = getRandomCard();
+      const newCard = getRandomCard(false);
       return set(['player', 'cards'], [...state.player.cards, newCard])(state);
     }
 
@@ -59,7 +59,7 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   };
 
   const initialGameState: GameState = {
-    player: { cards: getInitialHand() },
+    player: { cards: getInitialHand(false) },
     opponents: [
       { name: 'Benny', cards: getInitialHand() },
       { name: 'Fanny', cards: getInitialHand() },
