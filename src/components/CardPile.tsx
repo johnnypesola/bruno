@@ -4,42 +4,40 @@ import { CardInHand } from '../App';
 import { getRandomCard } from '../utils';
 
 const Container = styled.div`
-    margin: 2px;
-    display: inline-block;
-    border: 6px solid white;
-    border-radius: 5px;
-    padding: 20px 17px;
-    background: black;
-    position: relative;
-    color: black;
-    height: 60px;
-    width: 30px;
-    user-select: none;
+  margin: 2px;
+  display: inline-block;
+  border: 6px solid white;
+  border-radius: 5px;
+  padding: 20px 17px;
+  background: black;
+  position: relative;
+  color: black;
+  height: 60px;
+  width: 30px;
+  user-select: none;
 `;
 
 const Text = styled.div`
-    color: brown;
-    font-size: 12px;
-    font-weight: bold;
-    transform: rotate(12deg);
-`
+  color: brown;
+  font-size: 12px;
+  font-weight: bold;
+  transform: rotate(12deg);
+`;
 
 interface ComponentProps {
-    onGetCard: (newCard: CardInHand) => void
+  onGetCard: (newCard: CardInHand) => void;
 }
 
-const CardPile: React.FC<ComponentProps> = ({onGetCard}) => {
-    const onClickHandler = () => {
-        onGetCard(getRandomCard());
-    }    
+const CardPile: React.FC<ComponentProps> = ({ onGetCard }) => {
+  const onClickHandler = (): void => {
+    onGetCard(getRandomCard());
+  };
 
-    return (
-        <Container onClick={onClickHandler}>
-            <Text>
-                Bruno
-            </Text>
-        </Container>
-    )
-}
+  return (
+    <Container onClick={onClickHandler}>
+      <Text>Bruno</Text>
+    </Container>
+  );
+};
 
 export default CardPile;
