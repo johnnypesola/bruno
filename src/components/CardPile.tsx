@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
-import { CardInHand } from '../App';
-import { getRandomCard } from '../utils';
+import { GameStateContext } from '..';
+import { Action } from '../types/gameStateActionTypes';
 
 const Container = styled.div`
   margin: 2px;
@@ -24,13 +24,12 @@ const Text = styled.div`
   transform: rotate(12deg);
 `;
 
-interface ComponentProps {
-  onGetCard: (newCard: CardInHand) => void;
-}
+const CardPile: React.FC = () => {
+  const { dispatch } = useContext(GameStateContext);
 
-const CardPile: React.FC<ComponentProps> = ({ onGetCard }) => {
   const onClickHandler = (): void => {
-    onGetCard(getRandomCard());
+    dispatch({ name: Action.PlayerDrawsNewCard });
+    dispatch({ name: Action.SetNextPlayerTurn });
   };
 
   return (
