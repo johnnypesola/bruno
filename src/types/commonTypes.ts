@@ -6,9 +6,17 @@ export interface CardInHand {
   isConcealed: boolean;
 }
 
+export enum TablePosition {
+  OpponentRight,
+  OpponentLeft,
+  OpponentTop,
+  Player,
+}
+
 interface Opponent {
   name: string;
   cards: CardInHand[];
+  position: TablePosition;
 }
 
 interface Player {

@@ -9,7 +9,7 @@ import {
   OpponentPlaysCardAction,
   OpponentDrawsCardAction,
 } from '../types/gameStateActionTypes';
-import { GameState } from '../types/commonTypes';
+import { GameState, TablePosition } from '../types/commonTypes';
 
 const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const reducer = (state: GameState, action: GameStateAction): GameState => {
@@ -61,8 +61,8 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const initialGameState: GameState = {
     player: { cards: getInitialHand(false) },
     opponents: [
-      { name: 'Benny', cards: getInitialHand() },
-      { name: 'Fanny', cards: getInitialHand() },
+      { name: 'Benny', cards: getInitialHand(), position: TablePosition.OpponentLeft },
+      { name: 'Fanny', cards: getInitialHand(), position: TablePosition.OpponentRight },
     ],
     topCard: getRandomCard(),
     playerTurn: -1,

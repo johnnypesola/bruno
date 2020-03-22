@@ -13,6 +13,13 @@ body {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+
+
+  backface-visibility: visible;
+  perspective-origin: 50% 100%;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+
 }
 
 code {

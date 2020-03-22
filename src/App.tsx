@@ -1,13 +1,13 @@
 import React, { useContext } from 'react';
 import Card from './components/Card';
 import Table from './components/Table';
-import Hand from './components/Hand';
 import { doCardsMatch } from './utils';
 import CardPile from './components/CardPile';
-import { CardInHand } from './types/commonTypes';
+import { CardInHand, TablePosition } from './types/commonTypes';
 import { GameStateContext } from '.';
 import { Action } from './types/gameStateActionTypes';
 import useAIPlayers from './hooks/useAIPlayers';
+import Hand from './components/Hand';
 
 const App: React.FC = () => {
   const { state, dispatch } = useContext(GameStateContext);
@@ -29,7 +29,7 @@ const App: React.FC = () => {
   return (
     <>
       {state.opponents.map((opponent, index) => (
-        <Hand key={index}>
+        <Hand key={index} tablePosition={opponent.position}>
           {opponent.cards.map((card, index) => (
             <span key={index}>
               <Card color={card.color} value={card.value} isConcealed={card.isConcealed} />
@@ -43,7 +43,7 @@ const App: React.FC = () => {
         <Card color={state.topCard.color} value={state.topCard.value} isConcealed={false} />
       </Table>
 
-      <Hand>
+      <Hand tablePosition={TablePosition.Player}>
         {state.player.cards.map((card, index) => (
           <span key={index} onClick={() => placeCardFromHand(card, index)}>
             <Card color={card.color} value={card.value} isConcealed={card.isConcealed} />
