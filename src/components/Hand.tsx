@@ -7,12 +7,12 @@ const getTablePositionStyle = (tablePosition: TablePosition): string => {
       return 'transform: rotateZ(0) rotateX(-22deg) rotateY(0deg) translateZ(0px) translateX(-10px) translateY(0px);';
     case TablePosition.OpponentLeft:
       return `
-        // position: absolute;
-        transform: rotateZ(-360deg) rotateX(-59deg) rotateY(70deg) translateZ(-240px) translateX(20px) translateY(50px)`;
+        position: fixed;
+        transform: rotateZ(-350deg) rotateX(-70deg) rotateY(58deg) translateZ(-140px) translateX(-180px) translateY(-90px) skew(0deg, 10deg)`;
     case TablePosition.OpponentRight:
       return `
-        // position: absolute;
-        transform: rotateZ(-360deg) rotateX(-59deg) rotateY(-70deg) translateZ(-240px) translateX(20px) translateY(50px)`;
+        position: fixed;
+        transform: rotateZ(-350deg) rotateX(-70deg) rotateY(-22deg) translateZ(-115px) translateX(238px) translateY(-42px) skew(0deg, -2deg)`;
 
     default:
       return '';
