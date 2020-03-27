@@ -1,5 +1,12 @@
 import { useReducer, Dispatch } from 'react';
-import { getInitialHand, getRandomCard } from '../utils';
+import {
+  getInitialHand,
+  getRandomCard,
+  getShuffledDeck,
+  removeTopCardFromDeck,
+  getTopCardInDeck,
+  removeCardFromHand,
+} from '../utils';
 import set from 'lodash/fp/set';
 import { flow } from 'lodash/fp';
 import {
@@ -9,39 +16,34 @@ import {
   OpponentPlaysCardAction,
   OpponentDrawsCardAction,
 } from '../types/gameStateActionTypes';
-import { GameState, TablePosition } from '../types/commonTypes';
+import { GameState, TablePosition, CardInHand } from '../types/commonTypes';
+import { CardColor } from '../components/Card';
+import CardDeck from '../components/CardDeck';
 
 const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const reducer = (state: GameState, action: GameStateAction): GameState => {
     if (action.name === Action.PlayerPlaysCard) {
       const { cardIndex } = (action as PlayerPlaysCardAction).value;
-      const newTopCard = state.player.cards[cardIndex];
-      const newCards = state.player.cards.filter((card, index) => index !== cardIndex);
-
-      return flow(
-        // Update state in sequence
-        set(['player', 'cards'], newCards),
-        set(['topCard'], newTopCard),
-      )(state);
+      const newCards = removeCardFromHand(state.player.cards, cardIndex);
+      return set(['player', 'cards'], newCards)(state);
     }
 
     if (action.name === Action.OpponentPlaysCard) {
       const { cardIndex, opponentIndex } = (action as OpponentPlaysCardAction).value;
       const opponent = state.opponents[opponentIndex];
-      const newTopCard = opponent.cards[cardIndex];
-      const newCards = opponent.cards.filter((card, index) => index !== cardIndex);
-
-      return flow(
-        // Update state in sequence
-        set(['opponents', opponentIndex, 'cards'], newCards),
-        set(['topCard'], newTopCard),
-      )(state);
+      const newCards = removeCardFromHand(opponent.cards, cardIndex);
+      return set(['opponents', opponentIndex, 'cards'], newCards)(state);
     }
 
     if (action.name === Action.OpponentDrawsCard) {
       const { opponentIndex } = (action as OpponentDrawsCardAction).value;
-      const newCard = getRandomCard();
-      return set(['opponents', opponentIndex, 'cards'], [...state.opponents[opponentIndex].cards, newCard])(state);
+      const newCard = getTopCardInDeck(state.cardDeck);
+      const cardDeck = removeTopCardFromDeck(state.cardDeck);
+
+      return flow(
+        set(['cardDeck'], cardDeck),
+        set(['opponents', opponentIndex, 'cards'], [...state.opponents[opponentIndex].cards, newCard]),
+      )(state);
     }
 
     if (action.name === Action.SetNextPlayerTurn) {
@@ -50,8 +52,10 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
 
     if (action.name === Action.PlayerDrawsNewCard) {
-      const newCard = getRandomCard(false);
-      return set(['player', 'cards'], [...state.player.cards, newCard])(state);
+      const newCard = getTopCardInDeck(state.cardDeck);
+      newCard.isConcealed = false;
+      const cardDeck = removeTopCardFromDeck(state.cardDeck);
+      return flow(set(['player', 'cards'], [...state.player.cards, newCard]), set(['cardDeck'], cardDeck))(state);
     }
 
     // Default fallback
@@ -64,7 +68,7 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       { name: 'Benny', cards: getInitialHand(), position: TablePosition.OpponentLeft },
       { name: 'Fanny', cards: getInitialHand(), position: TablePosition.OpponentRight },
     ],
-    topCard: getRandomCard(),
+    cardDeck: getShuffledDeck(),
     playerTurn: -1,
   };
 
