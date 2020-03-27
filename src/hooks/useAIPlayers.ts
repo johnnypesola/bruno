@@ -6,8 +6,9 @@ import { Action } from '../types/gameStateActionTypes';
 
 const useAIPlayers = (): void => {
   const { state, dispatch } = useContext(GameStateContext);
+  const topCard = state.cardDeck[0];
   const getMatchingCardIndex = (): number =>
-    state.opponents[state.playerTurn].cards.findIndex(card => doCardsMatch(card, state.topCard));
+    state.opponents[state.playerTurn].cards.findIndex(card => doCardsMatch(card, topCard));
 
   // Game loop
   useInterval(() => {

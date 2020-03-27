@@ -17,7 +17,7 @@ const App: React.FC = () => {
     const isPlayersTurn = state.playerTurn === -1;
     if (!isPlayersTurn) return;
 
-    if (doCardsMatch(cardInHand, state.topCard)) {
+    if (doCardsMatch(cardInHand, state.cardDeck[0])) {
       dispatch({
         name: Action.PlayerPlaysCard,
         value: { cardIndex },
@@ -40,7 +40,7 @@ const App: React.FC = () => {
 
       <Table>
         <CardDeck />
-        <Card color={state.topCard.color} value={state.topCard.value} isConcealed={false} />
+        <Card color={state.cardDeck[0].color} value={state.cardDeck[0].value} isConcealed={false} />
       </Table>
 
       <Hand tablePosition={TablePosition.Player}>
