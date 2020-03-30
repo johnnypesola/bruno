@@ -30,4 +30,5 @@ export interface GameState {
   player: Player;
   topCard: CardInHand;
   playerTurn: number;
+  isReversePlayDirection: boolean;
 }

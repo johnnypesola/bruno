@@ -6,19 +6,26 @@ import { Action } from '../types/gameStateActionTypes';
 
 const useAIPlayers = (): void => {
   const { state, dispatch } = useContext(GameStateContext);
-  const getMatchingCardIndex = (): number =>
-    state.opponents[state.playerTurn].cards.findIndex(card => doCardsMatch(card, state.topCard));
+  const getCardToPlayIndex = (): number => {
+    const matchingCardIndex = state.opponents[state.playerTurn].cards.findIndex(card =>
+      doCardsMatch(card, state.topCard),
+    );
+    return matchingCardIndex;
+  };
 
   // Game loop
   useInterval(() => {
     const isAIPlayersTurn = state.playerTurn !== -1;
 
     if (isAIPlayersTurn) {
-      const cardIndex = getMatchingCardIndex();
       const opponentIndex = state.playerTurn;
       const isOpponentInGame = !state.opponents[opponentIndex].hasExitedGame;
 
       if (isOpponentInGame) {
+        const cardIndex = getCardToPlayIndex();
+
+        dispatch({ name: Action.HandleCardEffectForOpponent, value: { opponentIndex } });
+
         if (cardIndex !== -1) {
           dispatch({
             name: Action.OpponentPlaysCard,

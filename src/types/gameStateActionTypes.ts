@@ -5,6 +5,8 @@ export enum Action {
   PlayerDrawsNewCard,
   SetNextPlayerTurn,
   HandleAnyPlayerOutOfCards,
+  HandleCardEffectForPlayer,
+  HandleCardEffectForOpponent,
 }
 
 export interface PlayerPlaysCardAction {
@@ -33,10 +35,20 @@ export interface HandleAnyPlayerOutOfCards {
   name: Action.HandleAnyPlayerOutOfCards;
 }
 
+export interface HandleCardEffectForPlayer {
+  name: Action.HandleCardEffectForPlayer;
+}
+export interface HandleCardEffectForOpponent {
+  name: Action.HandleCardEffectForOpponent;
+  value: { opponentIndex: number };
+}
+
 export type GameStateAction =
   | PlayerPlaysCardAction
   | OpponentPlaysCardAction
   | OpponentDrawsCardAction
   | PlayerDrawsCardAction
   | SetNextPlayerTurn
-  | HandleAnyPlayerOutOfCards;
+  | HandleAnyPlayerOutOfCards
+  | HandleCardEffectForPlayer
+  | HandleCardEffectForOpponent;

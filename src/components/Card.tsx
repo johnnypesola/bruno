@@ -19,6 +19,8 @@ export enum CardValue {
   Seven = '7',
   Eight = '8',
   Nine = '9',
+  Reverse = '⇄',
+  PlusTwo = '+2',
 }
 
 interface ComponentProps {

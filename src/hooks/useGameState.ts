@@ -8,8 +8,10 @@ import {
   Action,
   OpponentPlaysCardAction,
   OpponentDrawsCardAction,
+  HandleCardEffectForOpponent,
 } from '../types/gameStateActionTypes';
 import { GameState, TablePosition } from '../types/commonTypes';
+import { CardValue } from '../components/Card';
 
 const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const reducer = (state: GameState, action: GameStateAction): GameState => {
@@ -18,11 +20,16 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       const newTopCard = state.player.cards[cardIndex];
       const newCards = state.player.cards.filter((card, index) => index !== cardIndex);
 
-      return flow(
+      let newState = flow(
         // Update state in sequence
         set(['player', 'cards'], newCards),
         set(['topCard'], newTopCard),
       )(state);
+
+      if (newTopCard.value === CardValue.Reverse) {
+        newState = set(['isReversePlayDirection'], !state.isReversePlayDirection)(newState);
+      }
+      return newState;
     }
 
     if (action.name === Action.OpponentPlaysCard) {
@@ -31,11 +38,16 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       const newTopCard = opponent.cards[cardIndex];
       const newCards = opponent.cards.filter((card, index) => index !== cardIndex);
 
-      return flow(
+      let newState = flow(
         // Update state in sequence
         set(['opponents', opponentIndex, 'cards'], newCards),
         set(['topCard'], newTopCard),
       )(state);
+
+      if (newTopCard.value === CardValue.Reverse) {
+        newState = set(['isReversePlayDirection'], !state.isReversePlayDirection)(newState);
+      }
+      return newState;
     }
 
     if (action.name === Action.OpponentDrawsCard) {
@@ -44,8 +56,32 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       return set(['opponents', opponentIndex, 'cards'], [...state.opponents[opponentIndex].cards, newCard])(state);
     }
 
+    if (action.name === Action.HandleCardEffectForOpponent) {
+      const { opponentIndex } = (action as HandleCardEffectForOpponent).value;
+
+      if (state.topCard.value == CardValue.PlusTwo) {
+        const newCards = [getRandomCard(), getRandomCard()];
+        return set(
+          ['opponents', opponentIndex, 'cards'],
+          [...state.opponents[opponentIndex].cards, ...newCards],
+        )(state);
+      }
+    }
+
+    if (action.name === Action.HandleCardEffectForPlayer) {
+      if (state.topCard.value == CardValue.PlusTwo) {
+        const newCards = [getRandomCard(false), getRandomCard(false)];
+        return set(['player', 'cards'], [...state.player.cards, ...newCards])(state);
+      }
+    }
+
     if (action.name === Action.SetNextPlayerTurn) {
-      const nextPlayerIndex = state.playerTurn >= state.opponents.length - 1 ? -1 : state.playerTurn + 1;
+      let nextPlayerIndex;
+      if (state.isReversePlayDirection) {
+        nextPlayerIndex = state.playerTurn !== -1 ? state.playerTurn - 1 : state.opponents.length - 1;
+      } else {
+        nextPlayerIndex = state.playerTurn >= state.opponents.length - 1 ? -1 : state.playerTurn + 1;
+      }
       return set(['playerTurn'], nextPlayerIndex)(state);
     }
 
@@ -79,6 +115,7 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     ],
     topCard: getRandomCard(),
     playerTurn: -1,
+    isReversePlayDirection: false,
   };
 
   return useReducer(reducer, initialGameState);

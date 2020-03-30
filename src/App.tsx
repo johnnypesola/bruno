@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import Card from './components/Card';
 import Table from './components/Table';
 import { doCardsMatch } from './utils';
@@ -28,6 +28,10 @@ const App: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (state.playerTurn === -1) dispatch({ name: Action.HandleCardEffectForPlayer });
+  }, [state.topCard, state.playerTurn]);
+
   return (
     <>
       {state.opponents.map((opponent, index) => (
@@ -45,7 +49,6 @@ const App: React.FC = () => {
 
       <Hand tablePosition={TablePosition.Player} cardsCount={state.player.cards.length}>
         {state.player.cards.map((card, index) => (
-          // <span key={index} onClick={() => placeCardFromHand(card, index)}>
           <Card
             key={index}
             color={card.color}
@@ -53,7 +56,6 @@ const App: React.FC = () => {
             isConcealed={card.isConcealed}
             onClick={() => placeCardFromHand(card, index)}
           />
-          // </span>
         ))}
       </Hand>
     </>
