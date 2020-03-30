@@ -13,15 +13,17 @@ export enum TablePosition {
   Player,
 }
 
-interface Opponent {
-  name: string;
+interface BasePlayer {
   cards: CardInHand[];
+  hasExitedGame: boolean;
+}
+
+interface Opponent extends BasePlayer {
+  name: string;
   position: TablePosition;
 }
 
-interface Player {
-  cards: CardInHand[];
-}
+type Player = BasePlayer;
 
 export interface GameState {
   opponents: Opponent[];

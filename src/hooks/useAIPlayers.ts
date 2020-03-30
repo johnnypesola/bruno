@@ -15,19 +15,24 @@ const useAIPlayers = (): void => {
 
     if (isAIPlayersTurn) {
       const cardIndex = getMatchingCardIndex();
+      const opponentIndex = state.playerTurn;
+      const isOpponentInGame = !state.opponents[opponentIndex].hasExitedGame;
 
-      if (cardIndex !== -1) {
-        dispatch({
-          name: Action.OpponentPlaysCard,
-          value: { cardIndex, opponentIndex: state.playerTurn },
-        });
-      } else {
-        dispatch({
-          name: Action.OpponentDrawsCard,
-          value: { opponentIndex: state.playerTurn },
-        });
+      if (isOpponentInGame) {
+        if (cardIndex !== -1) {
+          dispatch({
+            name: Action.OpponentPlaysCard,
+            value: { cardIndex, opponentIndex },
+          });
+        } else {
+          dispatch({
+            name: Action.OpponentDrawsCard,
+            value: { opponentIndex },
+          });
+        }
       }
 
+      dispatch({ name: Action.HandleAnyPlayerOutOfCards });
       dispatch({ name: Action.SetNextPlayerTurn });
     }
   }, 1000);

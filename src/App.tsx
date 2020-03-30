@@ -15,13 +15,15 @@ const App: React.FC = () => {
 
   const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
     const isPlayersTurn = state.playerTurn === -1;
-    if (!isPlayersTurn) return;
+    const isPlayerInGame = !state.player.hasExitedGame;
+    if (!isPlayerInGame || !isPlayersTurn) return;
 
     if (doCardsMatch(cardInHand, state.topCard)) {
       dispatch({
         name: Action.PlayerPlaysCard,
         value: { cardIndex },
       });
+      dispatch({ name: Action.HandleAnyPlayerOutOfCards });
       dispatch({ name: Action.SetNextPlayerTurn });
     }
   };
@@ -29,11 +31,9 @@ const App: React.FC = () => {
   return (
     <>
       {state.opponents.map((opponent, index) => (
-        <Hand key={index} tablePosition={opponent.position}>
+        <Hand key={index} tablePosition={opponent.position} cardsCount={opponent.cards.length}>
           {opponent.cards.map((card, index) => (
-            <span key={index}>
-              <Card color={card.color} value={card.value} isConcealed={card.isConcealed} />
-            </span>
+            <Card key={index} color={card.color} value={card.value} isConcealed={card.isConcealed} />
           ))}
         </Hand>
       ))}
@@ -43,11 +43,17 @@ const App: React.FC = () => {
         <Card color={state.topCard.color} value={state.topCard.value} isConcealed={false} />
       </Table>
 
-      <Hand tablePosition={TablePosition.Player}>
+      <Hand tablePosition={TablePosition.Player} cardsCount={state.player.cards.length}>
         {state.player.cards.map((card, index) => (
-          <span key={index} onClick={() => placeCardFromHand(card, index)}>
-            <Card color={card.color} value={card.value} isConcealed={card.isConcealed} />
-          </span>
+          // <span key={index} onClick={() => placeCardFromHand(card, index)}>
+          <Card
+            key={index}
+            color={card.color}
+            value={card.value}
+            isConcealed={card.isConcealed}
+            onClick={() => placeCardFromHand(card, index)}
+          />
+          // </span>
         ))}
       </Hand>
     </>

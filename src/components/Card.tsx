@@ -25,6 +25,7 @@ interface ComponentProps {
   value: CardValue;
   color: CardColor;
   isConcealed: boolean;
+  onClick?: () => void;
 }
 
 const CardContainer = styled.div<{ cardColor: CardColor; isConcealed: boolean }>`
@@ -39,6 +40,7 @@ const CardContainer = styled.div<{ cardColor: CardColor; isConcealed: boolean }>
   height: 60px;
   width: 30px;
   user-select: none;
+  ${({ onClick }) => (onClick ? 'cursor: pointer;' : '')}
 `;
 
 const Circle = styled.div`
@@ -71,8 +73,8 @@ const Text = styled.div`
   transform: rotate(12deg);
 `;
 
-const Card: React.FC<ComponentProps> = ({ color, value, isConcealed }) => (
-  <CardContainer cardColor={color} isConcealed={isConcealed}>
+const Card: React.FC<ComponentProps> = ({ color, value, isConcealed, onClick }) => (
+  <CardContainer cardColor={color} isConcealed={isConcealed} onClick={onClick}>
     {!isConcealed && (
       <>
         <Circle />

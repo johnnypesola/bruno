@@ -54,15 +54,28 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       return set(['player', 'cards'], [...state.player.cards, newCard])(state);
     }
 
+    if (action.name === Action.HandleAnyPlayerOutOfCards) {
+      const opponentOutOfCardsIndex = state.opponents.findIndex(
+        opponent => !opponent.hasExitedGame && opponent.cards.length === 0,
+      );
+      if (opponentOutOfCardsIndex !== -1) {
+        return set(['opponents', opponentOutOfCardsIndex, 'hasExitedGame'], true)(state);
+      }
+      if (state.player.cards.length === 0) {
+        console.log('player exited');
+        return set(['player', 'hasExitedGame'], true)(state);
+      }
+    }
+
     // Default fallback
     return state;
   };
 
   const initialGameState: GameState = {
-    player: { cards: getInitialHand(false) },
+    player: { cards: getInitialHand(false), hasExitedGame: false },
     opponents: [
-      { name: 'Benny', cards: getInitialHand(), position: TablePosition.OpponentLeft },
-      { name: 'Fanny', cards: getInitialHand(), position: TablePosition.OpponentRight },
+      { name: 'Benny', cards: getInitialHand(), position: TablePosition.OpponentLeft, hasExitedGame: false },
+      { name: 'Fanny', cards: getInitialHand(), position: TablePosition.OpponentRight, hasExitedGame: false },
     ],
     topCard: getRandomCard(),
     playerTurn: -1,

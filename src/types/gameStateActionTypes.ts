@@ -4,6 +4,7 @@ export enum Action {
   OpponentDrawsCard,
   PlayerDrawsNewCard,
   SetNextPlayerTurn,
+  HandleAnyPlayerOutOfCards,
 }
 
 export interface PlayerPlaysCardAction {
@@ -28,9 +29,14 @@ export interface SetNextPlayerTurn {
   name: Action.SetNextPlayerTurn;
 }
 
+export interface HandleAnyPlayerOutOfCards {
+  name: Action.HandleAnyPlayerOutOfCards;
+}
+
 export type GameStateAction =
   | PlayerPlaysCardAction
   | OpponentPlaysCardAction
   | OpponentDrawsCardAction
   | PlayerDrawsCardAction
-  | SetNextPlayerTurn;
+  | SetNextPlayerTurn
+  | HandleAnyPlayerOutOfCards;

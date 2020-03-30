@@ -17,6 +17,7 @@ const Container = styled.div`
   user-select: none;
   position: relative;
   bottom: 20px;
+  cursor: pointer;
 
   &:after {
     background-color: gray;
@@ -45,7 +46,8 @@ const CardPile: React.FC = () => {
 
   const onClickHandler = (): void => {
     const isPlayersTurn = state.playerTurn === -1;
-    if (!isPlayersTurn) return;
+    const isPlayerInGame = !state.player.hasExitedGame;
+    if (!isPlayerInGame || !isPlayersTurn) return;
     dispatch({ name: Action.PlayerDrawsNewCard });
     dispatch({ name: Action.SetNextPlayerTurn });
   };
