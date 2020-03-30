@@ -41,7 +41,7 @@ const Text = styled.div`
   transform: rotate(12deg);
 `;
 
-const CardPile: React.FC = () => {
+const CardDeck: React.FC = () => {
   const { state, dispatch } = useContext(GameStateContext);
 
   const onClickHandler = (): void => {
@@ -59,4 +59,4 @@ const CardPile: React.FC = () => {
   );
 };
 
-export default CardPile;
+export default CardDeck;

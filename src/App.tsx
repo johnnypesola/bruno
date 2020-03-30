@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Card from './components/Card';
 import Table from './components/Table';
 import { doCardsMatch } from './utils';
-import CardPile from './components/CardPile';
+import CardDeck from './components/CardDeck';
 import { CardInHand, TablePosition } from './types/commonTypes';
 import { GameStateContext } from '.';
 import { Action } from './types/gameStateActionTypes';
@@ -39,7 +39,7 @@ const App: React.FC = () => {
       ))}
 
       <Table>
-        <CardPile />
+        <CardDeck />
         <Card color={state.topCard.color} value={state.topCard.value} isConcealed={false} />
       </Table>
 
