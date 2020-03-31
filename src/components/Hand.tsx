@@ -26,7 +26,7 @@ const getTablePositionStyle = (tablePosition: TablePosition): string => {
 
 const getCardMargin = (cardsCount: number, isPlayer: boolean): string => {
   const factor = isPlayer ? 3 : 8;
-  const mininumMargin = isPlayer ? -40 : -80;
+  const mininumMargin = isPlayer ? -40 : -60;
   const val = Math.max(cardsCount * -factor, mininumMargin);
   return `2px 2px 2px ${val}px`;
 };

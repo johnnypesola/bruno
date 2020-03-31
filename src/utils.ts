@@ -1,6 +1,6 @@
 import { initialNumberOfCardsInHand } from './constants';
 import { CardColor, CardValue } from './components/Card';
-import { CardInHand } from './types/commonTypes';
+import { CardInHand, GameState, CardInPile } from './types/commonTypes';
 
 export function randomEnum<T>(anEnum: T): T[keyof T] {
   const enumValues = (Object.values(anEnum) as unknown) as T[keyof T][];
@@ -16,6 +16,18 @@ export const getRandomCard = (isConcealed = true): CardInHand => {
   };
 };
 
+export const toPileCard = (card: CardInHand): CardInPile => {
+  const randomRotation = Math.floor(Math.random() * 360);
+  const randomOffsetX = Math.floor(Math.random() * 50) - 25;
+  const randomOffsetY = Math.floor(Math.random() * 50) - 25;
+  return {
+    ...card,
+    rotation: randomRotation,
+    offsetX: randomOffsetX,
+    offsetY: randomOffsetY,
+  };
+};
+
 export const getInitialHand = (isConcealed = true): CardInHand[] => {
   const initialHand: CardInHand[] = [];
 
@@ -26,5 +38,7 @@ export const getInitialHand = (isConcealed = true): CardInHand[] => {
   return initialHand;
 };
 
-export const doCardsMatch = (card1: CardInHand, card2: CardInHand): boolean =>
+export const doCardsMatch = (card1: CardInHand | CardInPile, card2: CardInHand | CardInPile): boolean =>
   card1.color === card2.color || card1.value === card2.value;
+
+export const getTopCard = (cards: CardInPile[]): CardInPile => cards[cards.length - 1];

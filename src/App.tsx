@@ -1,16 +1,18 @@
 import React, { useContext, useEffect } from 'react';
 import Card from './components/Card';
 import Table from './components/Table';
-import { doCardsMatch } from './utils';
+import { doCardsMatch, getTopCard } from './utils';
 import CardDeck from './components/CardDeck';
 import { CardInHand, TablePosition } from './types/commonTypes';
 import { GameStateContext } from '.';
 import { Action } from './types/gameStateActionTypes';
 import useAIPlayers from './hooks/useAIPlayers';
 import Hand from './components/Hand';
+import CardPile from './components/CardPile';
 
 const App: React.FC = () => {
   const { state, dispatch } = useContext(GameStateContext);
+
   useAIPlayers();
 
   const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
@@ -18,19 +20,19 @@ const App: React.FC = () => {
     const isPlayerInGame = !state.player.hasExitedGame;
     if (!isPlayerInGame || !isPlayersTurn) return;
 
-    if (doCardsMatch(cardInHand, state.topCard)) {
+    if (doCardsMatch(cardInHand, getTopCard(state.cardPile))) {
       dispatch({
         name: Action.PlayerPlaysCard,
         value: { cardIndex },
       });
       dispatch({ name: Action.HandleAnyPlayerOutOfCards });
-      dispatch({ name: Action.SetNextPlayerTurn });
+      setTimeout(() => dispatch({ name: Action.SetNextPlayerTurn }), 1000);
     }
   };
 
   useEffect(() => {
     if (state.playerTurn === -1) dispatch({ name: Action.HandleCardEffectForPlayer });
-  }, [state.topCard, state.playerTurn]);
+  }, [state.cardPile, state.playerTurn, dispatch]);
 
   return (
     <>
@@ -44,7 +46,7 @@ const App: React.FC = () => {
 
       <Table>
         <CardDeck />
-        <Card color={state.topCard.color} value={state.topCard.value} isConcealed={false} />
+        <CardPile />
       </Table>
 
       <Hand tablePosition={TablePosition.Player} cardsCount={state.player.cards.length}>

@@ -28,20 +28,27 @@ interface ComponentProps {
   color: CardColor;
   isConcealed: boolean;
   onClick?: () => void;
+  rotation?: number;
+  offsetX?: number;
+  offsetY?: number;
 }
 
-const CardContainer = styled.div<{ cardColor: CardColor; isConcealed: boolean }>`
+const CardContainer = styled.div<ComponentProps>`
   margin: 2px;
   display: inline-block;
   border: 6px solid white;
   border-radius: 5px;
   padding: 20px 17px;
-  background: ${({ isConcealed, cardColor }) => (isConcealed ? 'black' : cardColor)};
+  background: ${({ isConcealed, color }) => (isConcealed ? 'black' : color)};
   position: relative;
   color: black;
   height: 60px;
   width: 30px;
   user-select: none;
+  box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.5);
+  ${({ offsetX }) => (offsetX ? `left: ${offsetX}px;` : '')}
+  ${({ offsetY }) => (offsetY ? `top: ${offsetY}px;` : '')}
+  ${({ rotation }) => (rotation ? `transform: rotate(${rotation}deg);` : '')}
   ${({ onClick }) => (onClick ? 'cursor: pointer;' : '')}
 `;
 
@@ -75,8 +82,16 @@ const Text = styled.div`
   transform: rotate(12deg);
 `;
 
-const Card: React.FC<ComponentProps> = ({ color, value, isConcealed, onClick }) => (
-  <CardContainer cardColor={color} isConcealed={isConcealed} onClick={onClick}>
+const Card: React.FC<ComponentProps> = ({ color, value, isConcealed, onClick, rotation, offsetX, offsetY }) => (
+  <CardContainer
+    color={color}
+    isConcealed={isConcealed}
+    onClick={onClick}
+    rotation={rotation}
+    offsetX={offsetX}
+    offsetY={offsetY}
+    value={value}
+  >
     {!isConcealed && (
       <>
         <Circle />

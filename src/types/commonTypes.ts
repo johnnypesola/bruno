@@ -6,6 +6,14 @@ export interface CardInHand {
   isConcealed: boolean;
 }
 
+export interface CardInPile {
+  color: CardColor;
+  value: CardValue;
+  rotation: number;
+  offsetX: number;
+  offsetY: number;
+}
+
 export enum TablePosition {
   OpponentRight,
   OpponentLeft,
@@ -28,7 +36,7 @@ type Player = BasePlayer;
 export interface GameState {
   opponents: Opponent[];
   player: Player;
-  topCard: CardInHand;
+  cardPile: CardInPile[];
   playerTurn: number;
   isReversePlayDirection: boolean;
 }
