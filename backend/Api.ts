@@ -1,102 +1,37 @@
 import feathers from '@feathersjs/feathers';
 import '@feathersjs/transport-commons';
 import express from '@feathersjs/express';
-import socketio from '@feathersjs/socketio';
-import { getUserId } from './utils';
-
-enum PublicChannels {
-  CardPile = "cardpile"
-}
-
-// This is the interface for the message data
-interface Message {
-  id: number;
-  text: string;
-}
-
-// A messages service that allows to create new
-// and return all existing messages
-class MessageService {
-  messages: Message[] = [];
-
-  async find () {
-    // Just return all our messages
-    return this.messages;
-  }
-
-  async create (data: Pick<Message, 'text'>) {
-    // The new message is the data text with a unique identifier added
-    // using the messages length since it changes whenever we add one
-    const message: Message = {
-      id: this.messages.length,
-      text: data.text
-    }
-
-    // Add new message to the list
-    this.messages.push(message);
-
-    return message;
-  }
-  
-  async clear() {
-    this.messages = [];
-    console.log("Cleared messages");
-  }
-}
+import { getUserId, getInitialHand, getOtherPlayersChannels } from './utils';
+import { Channels, addChannelPublishers } from './src/channels';
+import { setupServer } from './src/setupServer';
+import { ApiService } from './src/services';
+import { Opponent, TablePosition } from '../frontend/src/types/commonTypes';
 
 // Creates an ExpressJS compatible Feathers application
-const app = express(feathers());
+const app = setupServer(express(feathers()));
 
-// Express middleware to parse HTTP JSON bodies
-app.use(express.json());
-// Express middleware to parse URL-encoded params
-app.use(express.urlencoded({ extended: true }));
-// Express middleware to to host static files from the current folder
-app.use(express.static(__dirname));
-// Add REST API support
-app.configure(express.rest());
-// Configure Socket.io real-time APIs
-app.configure(socketio());
-// Register our messages service
-app.use('/messages', new MessageService());
-// Express middleware with a nicer error handler
-app.use(express.errorHandler());
+// Publish all events to the `everybody` channel
+// app.publish(data => app.channel('everybody'));
 
 // Add any new real-time connection to the `everybody` channel
 app.on('connection', connection => {
-  app.channel('everybody').join(connection);
+  app.channel(Channels.CardPile).join(connection);
 
   const userId = getUserId(connection);
   app.channel(userId).join(connection);
 
-  // 
+  app.service(ApiService.Player).addPlayer(userId);
 });
 
-// Publish all events to the `everybody` channel
-app.publish(data => app.channel('everybody'));
+app.on('disconnect', (connection) => {
+  const userId = getUserId(connection);
+  console.log(`user ${userId} disconnected`);
+
+  app.service(ApiService.Player).removePlayer(userId);
+});
 
 // Start the server
 app.listen(3030).on('listening', () =>
   console.log('Feathers server listening on localhost:3030')
 );
 
-// For good measure let's create a message
-// So our API doesn't look so empty
-app.service('messages').create({
-  text: 'Hello world from the server'
-});
-
-app.service('messages').publish('created', (data, context) => {
-  console.log("message publish created context");
-  console.log(context.params.headers.cookie);
-
-  // return app.channel('everybody').send({
-  //   name: data.name
-  // });
-});
-
-app.on('disconnect', (connection) => {
-  console.log("#### on disconnect");
-  console.log((connection as any).headers.cookie);
-  app.service("messages").clear();
-});

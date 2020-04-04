@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { doCardsMatch, getTopCard } from '../utils';
+import { doCardsMatch, getTopCard, getRandomCard } from '../utils';
 import { GameStateContext } from '..';
 import useInterval from './useInterval';
 import { Action } from '../types/gameStateActionTypes';
@@ -8,7 +8,8 @@ const useAIPlayers = (): void => {
   const { state, dispatch } = useContext(GameStateContext);
   const getCardToPlayIndex = (): number => {
     const matchingCardIndex = state.opponents[state.playerTurn].cards.findIndex(card =>
-      doCardsMatch(card, getTopCard(state.cardPile)),
+      // doCardsMatch(null, getTopCard(state.cardPile)),
+      doCardsMatch(getRandomCard(), getTopCard(state.cardPile)),
     );
     return matchingCardIndex;
   };

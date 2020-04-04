@@ -1,5 +1,4 @@
 import { useReducer, Dispatch } from 'react';
-import { getInitialHand, getRandomCard, getTopCard, toPileCard } from '../utils';
 import set from 'lodash/fp/set';
 import { flow } from 'lodash/fp';
 import {
@@ -10,8 +9,8 @@ import {
   OpponentDrawsCardAction,
   HandleCardEffectForOpponent,
 } from '../types/gameStateActionTypes';
-import { GameState, TablePosition } from '../types/commonTypes';
-import { CardValue } from '../components/Card';
+import { getTopCard, getInitialHand, getRandomCard, toPileCard } from '../utils';
+import { GameState, CardValue, TablePosition } from '../types/commonTypes';
 
 const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const reducer = (state: GameState, action: GameStateAction): GameState => {
@@ -35,7 +34,8 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     if (action.name === Action.OpponentPlaysCard) {
       const { cardIndex, opponentIndex } = (action as OpponentPlaysCardAction).value;
       const opponent = state.opponents[opponentIndex];
-      const newTopCard = toPileCard(opponent.cards[cardIndex]);
+      // const newTopCard = toPileCard(opponent.cards[cardIndex]);
+      const newTopCard = toPileCard(getRandomCard());
       const newCards = opponent.cards.filter((card, index) => index !== cardIndex);
 
       let newState = flow(
@@ -108,10 +108,10 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   };
 
   const initialGameState: GameState = {
-    player: { cards: getInitialHand(false), hasExitedGame: false },
+    player: { id: 'Player', cards: getInitialHand(false), hasExitedGame: false },
     opponents: [
-      { name: 'Benny', cards: getInitialHand(), position: TablePosition.OpponentLeft, hasExitedGame: false },
-      { name: 'Fanny', cards: getInitialHand(), position: TablePosition.OpponentRight, hasExitedGame: false },
+      { id: 'Benny', cards: [], position: TablePosition.OpponentLeft, hasExitedGame: false },
+      { id: 'Fanny', cards: [], position: TablePosition.OpponentRight, hasExitedGame: false },
     ],
     cardPile: [toPileCard(getRandomCard())],
     playerTurn: -1,

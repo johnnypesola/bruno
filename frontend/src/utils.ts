@@ -1,12 +1,17 @@
-import { initialNumberOfCardsInHand } from './constants';
-import { CardColor, CardValue } from './components/Card';
-import { CardInHand, GameState, CardInPile } from './types/commonTypes';
+import { CardInHand, CardColor, CardValue, CardInPile } from "./types/commonTypes";
 
-export function randomEnum<T>(anEnum: T): T[keyof T] {
-  const enumValues = (Object.values(anEnum) as unknown) as T[keyof T][];
-  const randomIndex = Math.floor(Math.random() * enumValues.length);
-  return enumValues[randomIndex];
-}
+const initialNumberOfCardsInHand = 7;
+
+
+export const getInitialHand = (isConcealed = true): CardInHand[] => {
+  const initialHand: CardInHand[] = [];
+
+  while (initialHand.length < initialNumberOfCardsInHand) {
+    initialHand.push(getRandomCard(isConcealed));
+  }
+
+  return initialHand;
+};
 
 export const getRandomCard = (isConcealed = true): CardInHand => {
   return {
@@ -15,6 +20,12 @@ export const getRandomCard = (isConcealed = true): CardInHand => {
     isConcealed: isConcealed,
   };
 };
+
+export function randomEnum<T>(anEnum: T): T[keyof T] {
+  const enumValues = (Object.values(anEnum) as unknown) as T[keyof T][];
+  const randomIndex = Math.floor(Math.random() * enumValues.length);
+  return enumValues[randomIndex];
+}
 
 export const toPileCard = (card: CardInHand): CardInPile => {
   const randomRotation = Math.floor(Math.random() * 360);
@@ -28,17 +39,7 @@ export const toPileCard = (card: CardInHand): CardInPile => {
   };
 };
 
-export const getInitialHand = (isConcealed = true): CardInHand[] => {
-  const initialHand: CardInHand[] = [];
-
-  while (initialHand.length < initialNumberOfCardsInHand) {
-    initialHand.push(getRandomCard(isConcealed));
-  }
-
-  return initialHand;
-};
+export const getTopCard = (cards: CardInPile[]): CardInPile => cards[cards.length - 1];
 
 export const doCardsMatch = (card1: CardInHand | CardInPile, card2: CardInHand | CardInPile): boolean =>
   card1.color === card2.color || card1.value === card2.value;
-
-export const getTopCard = (cards: CardInPile[]): CardInPile => cards[cards.length - 1];
