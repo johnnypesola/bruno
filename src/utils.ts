@@ -1,7 +1,20 @@
-import { CardInHand, CardColor, CardValue, CardInPile } from "./types/commonTypes";
+import { CardInHand, CardColor, CardValue, CardInPile } from './types/commonTypes';
 
 const initialNumberOfCardsInHand = 7;
 
+export function randomEnum<T>(anEnum: T): T[keyof T] {
+  const enumValues = (Object.values(anEnum) as unknown) as T[keyof T][];
+  const randomIndex = Math.floor(Math.random() * enumValues.length);
+  return enumValues[randomIndex];
+}
+
+export const getRandomCard = (isConcealed = true): CardInHand => {
+  return {
+    color: randomEnum(CardColor),
+    value: randomEnum(CardValue),
+    isConcealed: isConcealed,
+  };
+};
 
 export const getInitialHand = (isConcealed = true): CardInHand[] => {
   const initialHand: CardInHand[] = [];
@@ -12,20 +25,6 @@ export const getInitialHand = (isConcealed = true): CardInHand[] => {
 
   return initialHand;
 };
-
-export const getRandomCard = (isConcealed = true): CardInHand => {
-  return {
-    color: randomEnum(CardColor),
-    value: randomEnum(CardValue),
-    isConcealed: isConcealed,
-  };
-};
-
-export function randomEnum<T>(anEnum: T): T[keyof T] {
-  const enumValues = (Object.values(anEnum) as unknown) as T[keyof T][];
-  const randomIndex = Math.floor(Math.random() * enumValues.length);
-  return enumValues[randomIndex];
-}
 
 export const toPileCard = (card: CardInHand): CardInPile => {
   const randomRotation = Math.floor(Math.random() * 360);

@@ -16,29 +16,30 @@ import styled from 'styled-components';
 
 const App: React.FC = () => {
   const { state, dispatch } = useContext(GameStateContext);
-  const feathersApp = useRef(feathers())
+  const feathersApp = useRef(feathers());
 
   useEffect(() => {
-      const socket = io('http://localhost:3030');
-      
-      const app = feathers();
-      app.configure(feathers.socketio(socket));
-      app.configure(feathers.authentication());
-  
-      app.service('player').find({
-        text: 'A new message'
-      });
-  
-      // Receive real-time events through Socket.io
-      app.service('player')
-        .on('playerAdded', (message:string) => console.log(message));
-  
-      feathersApp.current =  app;
-  }, [])
-  
+    const socket = io('http://localhost:3030');
 
-  const getMessages = () => {
-    feathersApp.current.service('player').find().then((response: string) => console.log(response));
+    const app = feathers();
+    app.configure(feathers.socketio(socket));
+    app.configure(feathers.authentication());
+
+    app.service('player').find({
+      text: 'A new message',
+    });
+
+    // Receive real-time events through Socket.io
+    app.service('player').on('playerAdded', (message: string) => console.log(message));
+
+    feathersApp.current = app;
+  }, []);
+
+  const getMessages = (): void => {
+    feathersApp.current
+      .service('player')
+      .find()
+      .then((response: string) => console.log(response));
   };
 
   useAIPlayers();
@@ -67,7 +68,7 @@ const App: React.FC = () => {
     top: 10px;
     left: 10px;
     border: 5px solid pink;
-  `
+  `;
 
   return (
     <>

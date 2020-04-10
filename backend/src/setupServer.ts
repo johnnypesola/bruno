@@ -1,9 +1,8 @@
 import express from '@feathersjs/express';
 import socketio from '@feathersjs/socketio';
-import { CardPileService, PlayerService, ApiService } from './services';
-import { addChannelPublishers } from './channels';
+import { Api } from '../Api';
 
-export const setupServer = (app: express.Application<any>): express.Application<any> => {
+export default (app: Api): Api => {
   // Express middleware to parse HTTP JSON bodies
   app.use(express.json());
   // Express middleware to parse URL-encoded params
@@ -14,12 +13,6 @@ export const setupServer = (app: express.Application<any>): express.Application<
   app.configure(express.rest());
   // Configure Socket.io real-time APIs
   app.configure(socketio());
-
-  // Register our services
-  app.use(ApiService.CardPile, new CardPileService());
-  app.use(ApiService.Player, new PlayerService());
-
-  addChannelPublishers(app);
 
   // Express middleware with a nicer error handler
   app.use(express.errorHandler());
