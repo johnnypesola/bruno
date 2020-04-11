@@ -1,7 +1,7 @@
 import { Api } from '../Api';
 import { Channels } from './channels';
 import { getUserId } from '../utils';
-import { Service } from './services';
+import { Service } from '../../src/types/services';
 
 export default (app: Api): void => {
   // Add any new real-time connection to the `everybody` channel

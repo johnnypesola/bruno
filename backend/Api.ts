@@ -2,12 +2,12 @@ import feathers from '@feathersjs/feathers';
 import '@feathersjs/transport-commons';
 import express, { Application } from '@feathersjs/express';
 import channels from './src/channels';
-import services, { Services } from './src/services';
+import services, { AppServices } from './src/services';
 import setupServer from './src/setupServer';
 import eventListeners from './src/eventListeners';
 
 // Creates an ExpressJS compatible Feathers application
-export type Api = Application<Services>;
+export type Api = Application<AppServices>;
 const app: Api = express(feathers());
 
 app.configure(setupServer);

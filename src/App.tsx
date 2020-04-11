@@ -13,6 +13,8 @@ import CardPile from './components/CardPile';
 import io from 'socket.io-client';
 import feathers from '@feathersjs/client';
 import styled from 'styled-components';
+import { PlayerEvent } from './types/events';
+import { Service } from './types/services';
 
 const App: React.FC = () => {
   const { state, dispatch } = useContext(GameStateContext);
@@ -30,7 +32,11 @@ const App: React.FC = () => {
     });
 
     // Receive real-time events through Socket.io
-    app.service('player').on('playerAdded', (message: string) => console.log(message));
+    app.service(Service.Player).on(PlayerEvent.PlayerAdded, (message: string) => console.log('playerAdded', message));
+
+    app
+      .service(Service.Player)
+      .on(PlayerEvent.PlayerRemoved, (message: string) => console.log('playerRemoved', message));
 
     feathersApp.current = app;
   }, []);
