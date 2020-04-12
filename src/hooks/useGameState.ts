@@ -8,12 +8,40 @@ import {
   OpponentPlaysCardAction,
   OpponentDrawsCardAction,
   HandleCardEffectForOpponent,
+  AddOpponentAction,
+  RemoveOpponentAction,
+  AddOpponentsAction,
 } from '../types/gameStateActionTypes';
 import { getTopCard, getInitialHand, getRandomCard, toPileCard } from '../utils';
-import { GameState, CardValue, TablePosition } from '../types/commonTypes';
+import { GameState, CardValue } from '../types/commonTypes';
 
 const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const reducer = (state: GameState, action: GameStateAction): GameState => {
+    if (action.name === Action.AddOpponent) {
+      console.log('Action.AddOpponent');
+
+      const { opponent } = (action as AddOpponentAction).value;
+      console.log(opponent);
+      return set(['opponents'], [...state.opponents, opponent])(state);
+    }
+    if (action.name === Action.AddOpponents) {
+      console.log('Action.AddOpponents');
+
+      const { opponents } = (action as AddOpponentsAction).value;
+      console.log(opponents);
+      return set(['opponents'], opponents)(state);
+    }
+
+    if (action.name === Action.RemoveOpponent) {
+      const { id } = (action as RemoveOpponentAction).value;
+      const newOpponents = state.opponents.filter(opponent => opponent.id === id);
+
+      console.log('newOpponents', newOpponents);
+
+      console.log('Action.RemoveOpponent');
+      return set(['opponents'], [...newOpponents])(state);
+    }
+
     if (action.name === Action.PlayerPlaysCard) {
       const { cardIndex } = (action as PlayerPlaysCardAction).value;
       const newTopCard = toPileCard(state.player.cards[cardIndex]);
@@ -108,10 +136,10 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   };
 
   const initialGameState: GameState = {
-    player: { id: 'Player', cards: getInitialHand(false), hasExitedGame: false },
+    player: { id: 'Player', cards: getInitialHand(false), hasExitedGame: false, position: 0 },
     opponents: [
-      { id: 'Benny', cards: [], position: TablePosition.OpponentLeft, hasExitedGame: false },
-      { id: 'Fanny', cards: [], position: TablePosition.OpponentRight, hasExitedGame: false },
+      // { id: 'Benny', cards: [], position: TablePosition.OpponentLeft, hasExitedGame: false },
+      // { id: 'Fanny', cards: [], position: TablePosition.OpponentRight, hasExitedGame: false },
     ],
     cardPile: [toPileCard(getRandomCard())],
     playerTurn: -1,

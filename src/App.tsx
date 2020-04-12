@@ -3,52 +3,21 @@ import Card from './components/Card';
 import Table from './components/Table';
 import { doCardsMatch, getTopCard } from './utils';
 import CardDeck from './components/CardDeck';
-import { CardInHand, TablePosition, Opponent, CardColor, CardValue } from './types/commonTypes';
+import { CardInHand, Opponent, CardColor, CardValue } from './types/commonTypes';
 import { GameStateContext } from '.';
 import { Action } from './types/gameStateActionTypes';
 import useAIPlayers from './hooks/useAIPlayers';
 import Hand from './components/Hand';
 import CardPile from './components/CardPile';
 
-import io from 'socket.io-client';
-import feathers from '@feathersjs/client';
 import styled from 'styled-components';
-import { PlayerEvent } from './types/events';
-import { Service } from './types/services';
+import useApi from './hooks/useApi';
 
 const App: React.FC = () => {
   const { state, dispatch } = useContext(GameStateContext);
-  const feathersApp = useRef(feathers());
 
-  useEffect(() => {
-    const socket = io('http://localhost:3030');
-
-    const app = feathers();
-    app.configure(feathers.socketio(socket));
-    app.configure(feathers.authentication());
-
-    app.service('player').find({
-      text: 'A new message',
-    });
-
-    // Receive real-time events through Socket.io
-    app.service(Service.Player).on(PlayerEvent.PlayerAdded, (message: string) => console.log('playerAdded', message));
-
-    app
-      .service(Service.Player)
-      .on(PlayerEvent.PlayerRemoved, (message: string) => console.log('playerRemoved', message));
-
-    feathersApp.current = app;
-  }, []);
-
-  const getMessages = (): void => {
-    feathersApp.current
-      .service('player')
-      .find()
-      .then((response: string) => console.log(response));
-  };
-
-  useAIPlayers();
+  useApi();
+  // useAIPlayers();
 
   const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
     const isPlayersTurn = state.playerTurn === -1;
@@ -91,7 +60,7 @@ const App: React.FC = () => {
         <CardPile />
       </Table>
 
-      <Hand tablePosition={TablePosition.Player} cardsCount={state.player.cards.length}>
+      <Hand tablePosition={0} cardsCount={state.player.cards.length}>
         {state.player.cards.map((card, index) => (
           <Card
             key={index}
@@ -102,7 +71,6 @@ const App: React.FC = () => {
           />
         ))}
       </Hand>
-      <GetMessagesButton onClick={() => getMessages()}>Get messages!</GetMessagesButton>
     </>
   );
 };

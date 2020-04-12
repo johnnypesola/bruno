@@ -1,4 +1,9 @@
+import { Opponent } from './commonTypes';
+
 export enum Action {
+  AddOpponent,
+  AddOpponents,
+  RemoveOpponent,
   PlayerPlaysCard,
   OpponentPlaysCard,
   OpponentDrawsCard,
@@ -7,6 +12,20 @@ export enum Action {
   HandleAnyPlayerOutOfCards,
   HandleCardEffectForPlayer,
   HandleCardEffectForOpponent,
+}
+
+export interface AddOpponentAction {
+  name: Action.AddOpponent;
+  value: { opponent: Opponent };
+}
+export interface AddOpponentsAction {
+  name: Action.AddOpponents;
+  value: { opponents: Opponent[] };
+}
+
+export interface RemoveOpponentAction {
+  name: Action.RemoveOpponent;
+  value: { id: string };
 }
 
 export interface PlayerPlaysCardAction {
@@ -44,6 +63,9 @@ export interface HandleCardEffectForOpponent {
 }
 
 export type GameStateAction =
+  | AddOpponentAction
+  | AddOpponentsAction
+  | RemoveOpponentAction
   | PlayerPlaysCardAction
   | OpponentPlaysCardAction
   | OpponentDrawsCardAction

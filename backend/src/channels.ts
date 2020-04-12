@@ -1,9 +1,10 @@
 import { Service } from '../../src/types/services';
 import { getOtherPlayersChannels } from '../utils';
-import { Opponent, TablePosition } from '../../src/types/commonTypes';
+import { Opponent, Player } from '../../src/types/commonTypes';
 import { Api } from '../Api';
 import { Channel } from '@feathersjs/transport-commons/lib/channels/channel/base.d.ts';
 import { PlayerEvent } from '../../src/types/events';
+import { InitPlayerData } from './services/Player';
 
 export enum Channels {
   CardPile = 'cardpile',
@@ -12,23 +13,30 @@ export enum Channels {
 export default (app: Api): void => {
   app.service(Service.Player).publish(
     PlayerEvent.PlayerAdded,
-    (userId, context): Channel => {
-      const newPlayer: Opponent = {
-        id: userId,
+    (newPlayer: Player, context): Channel => {
+      const opponent: Opponent = {
+        ...newPlayer,
         cards: [null, null, null, null, null, null, null],
-        position: TablePosition.OpponentLeft,
-        hasExitedGame: false,
       };
 
-      const otherPlayersChannels = getOtherPlayersChannels(app, userId);
-      return otherPlayersChannels.send(newPlayer);
+      const otherPlayersChannels = getOtherPlayersChannels(app, newPlayer.id);
+      return otherPlayersChannels.send(opponent);
+    },
+  );
+  app.service(Service.Player).publish(
+    PlayerEvent.PlayerInit,
+    (data: InitPlayerData, context): Channel => {
+      const opponents: Opponent[] = data.otherPlayers.map(player => {
+        return { ...player, cards: player.cards.map(() => null) };
+      });
+
+      return app.channel(data.newPlayer.id).send(opponents);
     },
   );
 
   app.service(Service.Player).publish(
     PlayerEvent.PlayerRemoved,
     (userId, context): Channel => {
-      console.log('pulish for playerRemoved');
       const otherPlayersChannels = getOtherPlayersChannels(app, userId);
       return otherPlayersChannels.send(userId);
     },

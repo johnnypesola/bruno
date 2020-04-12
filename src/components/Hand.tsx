@@ -1,19 +1,18 @@
 import styled from 'styled-components';
-import { TablePosition } from '../types/commonTypes';
 
-const getTablePositionStyle = (tablePosition: TablePosition): string => {
+const getTablePositionStyle = (tablePosition: number): string => {
   switch (tablePosition) {
-    case TablePosition.Player:
+    case 0:
       return `
         position: fixed;
         bottom: 0px;
         transform: rotateZ(0) rotateX(-22deg) rotateY(0deg) translateZ(20px) translateX(-10px) translateY(0px);`;
-    case TablePosition.OpponentLeft:
+    case 1:
       return `
         position: fixed;
         left: 290px;
         transform: rotateZ(-350deg) rotateX(-70deg) rotateY(58deg) translateZ(-140px) translateX(-180px) translateY(-90px) skew(0deg, 10deg)`;
-    case TablePosition.OpponentRight:
+    case 2:
       return `
         position: fixed;
         right: 290px;
@@ -32,7 +31,7 @@ const getCardMargin = (cardsCount: number, isPlayer: boolean): string => {
 };
 
 interface HandProps {
-  tablePosition: TablePosition;
+  tablePosition: number;
   cardsCount: number;
 }
 
@@ -42,7 +41,7 @@ export default styled.div<HandProps>`
 
   > * {
     margin: ${({ cardsCount, tablePosition }) => {
-      const isPlayer = tablePosition === TablePosition.Player;
+      const isPlayer = tablePosition === 0;
       return getCardMargin(cardsCount, isPlayer);
     }};
   }

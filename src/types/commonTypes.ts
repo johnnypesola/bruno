@@ -36,13 +36,6 @@ export interface CardInPile {
   offsetY: number;
 }
 
-export enum TablePosition {
-  OpponentRight,
-  OpponentLeft,
-  OpponentTop,
-  Player,
-}
-
 interface BasePlayer {
   id: string;
   hasExitedGame: boolean;
@@ -50,11 +43,12 @@ interface BasePlayer {
 
 export interface Opponent extends BasePlayer {
   cards: HiddenCard[];
-  position: TablePosition;
+  position: number;
 }
 
 export interface Player extends BasePlayer {
   cards: CardInHand[];
+  position: number;
 }
 
 export interface GameState {
