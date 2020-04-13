@@ -2,6 +2,7 @@ import { Player } from '../../../src/types/commonTypes';
 import { getInitialHand } from '../../utils';
 import { PlayerEvent } from '../../../src/types/events';
 import { EventEmitter } from 'events';
+import { Params } from '@feathersjs/feathers';
 
 export interface InitPlayerData {
   newPlayer: Player;
@@ -20,6 +21,10 @@ export class PlayerService extends EventEmitter {
 
   async find(): Promise<Player[]> {
     return this.players;
+  }
+
+  async playCard(cardIndex: number, params: Params): Promise<void> {
+    console.log(cardIndex, params);
   }
 
   async addPlayer(id: string): Promise<string> {
