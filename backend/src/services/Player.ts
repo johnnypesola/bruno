@@ -1,30 +1,28 @@
 import { Player } from '../../../src/types/commonTypes';
 import { getInitialHand } from '../../utils';
 import { PlayerEvent } from '../../../src/types/events';
-import { EventEmitter } from 'events';
-import { Params } from '@feathersjs/feathers';
+import { ApiServer } from '../ApiServer';
+import { BaseService } from './Base';
 
 export interface InitPlayerData {
   newPlayer: Player;
   otherPlayers: Player[];
 }
 
-export class PlayerService extends EventEmitter {
+export class PlayerService extends BaseService {
   players: Player[];
-  events: PlayerEvent[];
 
-  constructor() {
-    super();
-    this.events = Object.values(PlayerEvent);
+  constructor(api: ApiServer) {
+    super(api);
     this.players = [];
   }
 
-  async find(): Promise<Player[]> {
-    return this.players;
-  }
+  // async getPlayers(): Promise<Player[]> {
+  //   return this.players;
+  // }
 
-  async playCard(cardIndex: number, params: Params): Promise<void> {
-    console.log(cardIndex, params);
+  async playCard(cardIndex: number, something): Promise<void> {
+    console.log(cardIndex, something);
   }
 
   async addPlayer(id: string): Promise<string> {
@@ -42,8 +40,8 @@ export class PlayerService extends EventEmitter {
 
     const initPlayerData: InitPlayerData = { newPlayer, otherPlayers };
 
-    this.emit(PlayerEvent.PlayerInit, initPlayerData);
-    this.emit(PlayerEvent.PlayerAdded, newPlayer);
+    this.api.emit(PlayerEvent.PlayerInit, initPlayerData);
+    this.api.emit(PlayerEvent.PlayerAdded, newPlayer);
     return id;
   }
 
@@ -51,7 +49,7 @@ export class PlayerService extends EventEmitter {
     this.players = this.players.filter(player => player.id !== id);
     console.log(`Removed player for client with id: ${id}`);
 
-    this.emit(PlayerEvent.PlayerRemoved, id);
+    this.api.emit(PlayerEvent.PlayerRemoved, id);
     return id;
   }
 

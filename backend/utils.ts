@@ -1,21 +1,17 @@
 import { CardInHand, CardColor, CardValue, CardInPile } from '../src/types/commonTypes';
 import { initialNumberOfCardsInHand } from './constants';
-import { RealTimeConnection, Channel } from '@feathersjs/transport-commons/lib/channels/channel/base.d.ts';
-import { Api } from './Api';
-
-export const getUserId = (connection: RealTimeConnection): string => connection.headers.cookie;
 
 export const getUserIdsInChannel = (app, channel: string): string[] => {
   return app.channel(channel).connections.map(conn => conn.headers.cookie);
 };
 
-export const getOtherPlayersChannels = (app: Api, userId: string): Channel => {
-  const otherPlayersChannels = app.channel(app.channels).filter(connection => {
-    const id = getUserId(connection);
-    return id !== userId;
-  });
-  return otherPlayersChannels;
-};
+// export const getOtherPlayersChannels = (app: Api, userId: string): Channel => {
+//   const otherPlayersChannels = app.channel(app.channels).filter(connection => {
+//     const id = getUserId(connection);
+//     return id !== userId;
+//   });
+//   return otherPlayersChannels;
+// };
 
 export function randomEnum<T>(anEnum: T): T[keyof T] {
   const enumValues = (Object.values(anEnum) as unknown) as T[keyof T][];

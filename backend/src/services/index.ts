@@ -1,18 +1,15 @@
-import { ServiceAddons } from '@feathersjs/feathers';
-import { Api } from '../../Api';
 import { CardPileService } from './CardPile';
 import { PlayerService } from './Player';
-import { Service } from '../../../src/types/services';
+import { ServiceName } from '../../../src/types/services';
+import { ApiServer } from '../ApiServer';
+import { ApiEvent } from '../../../src/types/events';
 
-export interface AppServices {
-  [Service.CardPile]: CardPileService & ServiceAddons<any>;
-  [Service.Player]: PlayerService & ServiceAddons<any>;
-}
+export type ServiceType = CardPileService | PlayerService;
 
-export default (app: Api): void => {
+export default (api: ApiServer): void => {
   // Register our services
-  app.use(Service.CardPile, new CardPileService());
-  app.use(Service.Player, new PlayerService());
+  api.addService(ServiceName.CardPile, new CardPileService(api));
+  api.addService(ServiceName.Player, new PlayerService(api));
 
-  app.service(Service.CardPile).emit;
+  // api.service(Service.CardPile).emit;
 };

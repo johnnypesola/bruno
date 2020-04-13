@@ -1,23 +1,21 @@
-import { Api } from '../Api';
-import { Channels } from './channels';
-import { getUserId } from '../utils';
-import { Service } from '../../src/types/services';
+import { ServiceName } from '../../src/types/services';
+import { ApiServer } from './ApiServer';
+import { SystemEvent } from '../../src/types/events';
+import { Room } from './rooms';
+import { PlayerService } from './services/Player';
 
-export default (app: Api): void => {
+export default (api: ApiServer): void => {
   // Add any new real-time connection to the `everybody` channel
-  app.on('connection', connection => {
-    app.channel(Channels.CardPile).join(connection);
-
-    const userId = getUserId(connection);
-    app.channel(userId).join(connection);
-
-    app.service(Service.Player).addPlayer(userId);
+  api.addEventListener(SystemEvent.NewConnection, socket => {
+    const userId = socket.id;
+    socket.join(Room.CardPile);
+    console.log(`user ${userId} connected`);
+    api.service<PlayerService>(ServiceName.Player).addPlayer(userId);
   });
 
-  app.on('disconnect', connection => {
-    const userId = getUserId(connection);
+  api.addEventListener(SystemEvent.ConnectionClosed, socket => {
+    const userId = socket.id;
     console.log(`user ${userId} disconnected`);
-
-    app.service(Service.Player).removePlayer(userId);
+    api.service<PlayerService>(ServiceName.Player).removePlayer(userId);
   });
 };
