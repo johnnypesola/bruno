@@ -12,11 +12,13 @@ import CardPile from './components/CardPile';
 
 import styled from 'styled-components';
 import useApi from './hooks/useApi';
+import { ServiceName } from './types/services';
+import { PlayerEvent } from './types/events';
 
 const App: React.FC = () => {
   const { state, dispatch } = useContext(GameStateContext);
 
-  useApi();
+  const socket = useApi();
   // useAIPlayers();
 
   const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
@@ -24,14 +26,16 @@ const App: React.FC = () => {
     const isPlayerInGame = !state.player.hasExitedGame;
     if (!isPlayerInGame || !isPlayersTurn) return;
 
-    if (doCardsMatch(cardInHand, getTopCard(state.cardPile))) {
-      dispatch({
-        name: Action.PlayerPlaysCard,
-        value: { cardIndex },
-      });
-      dispatch({ name: Action.HandleAnyPlayerOutOfCards });
-      setTimeout(() => dispatch({ name: Action.SetNextPlayerTurn }), 1000);
-    }
+    socket.emit(PlayerEvent.PlayCard, cardIndex);
+
+    // if (doCardsMatch(cardInHand, getTopCard(state.cardPile))) {
+    //   dispatch({
+    //     name: Action.PlayerPlaysCard,
+    //     value: { cardIndex },
+    //   });
+    //   dispatch({ name: Action.HandleAnyPlayerOutOfCards });
+    //   setTimeout(() => dispatch({ name: Action.SetNextPlayerTurn }), 1000);
+    // }
   };
 
   useEffect(() => {

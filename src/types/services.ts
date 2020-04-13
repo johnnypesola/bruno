@@ -1,4 +1,4 @@
-export enum Service {
+export enum ServiceName {
   CardPile = 'cardpile',
   Player = 'player',
 }
