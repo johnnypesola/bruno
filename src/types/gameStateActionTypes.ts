@@ -4,6 +4,7 @@ export enum Action {
   AddOpponent,
   AddOpponents,
   RemoveOpponent,
+  UpdateOpponent,
   PlayerPlaysCard,
   OpponentPlaysCard,
   OpponentDrawsCard,
@@ -21,6 +22,10 @@ export interface AddOpponentAction {
 export interface AddOpponentsAction {
   name: Action.AddOpponents;
   value: { opponents: Opponent[] };
+}
+export interface UpdateOpponentAction {
+  name: Action.UpdateOpponent;
+  value: { opponent: Opponent };
 }
 
 export interface RemoveOpponentAction {
@@ -48,6 +53,7 @@ export interface PlayerDrawsCardAction {
 
 export interface SetNextPlayerTurn {
   name: Action.SetNextPlayerTurn;
+  value: { position: number };
 }
 
 export interface HandleAnyPlayerOutOfCards {
@@ -65,6 +71,7 @@ export interface HandleCardEffectForOpponent {
 export type GameStateAction =
   | AddOpponentAction
   | AddOpponentsAction
+  | UpdateOpponentAction
   | RemoveOpponentAction
   | PlayerPlaysCardAction
   | OpponentPlaysCardAction

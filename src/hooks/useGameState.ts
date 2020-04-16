@@ -11,6 +11,7 @@ import {
   AddOpponentAction,
   RemoveOpponentAction,
   AddOpponentsAction,
+  UpdateOpponentAction,
 } from '../types/gameStateActionTypes';
 import { getTopCard, getInitialHand, getRandomCard, toPileCard } from '../utils';
 import { GameState, CardValue } from '../types/commonTypes';
@@ -26,10 +27,18 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
     if (action.name === Action.AddOpponents) {
       console.log('Action.AddOpponents');
-
       const { opponents } = (action as AddOpponentsAction).value;
       console.log(opponents);
       return set(['opponents'], opponents)(state);
+    }
+    if (action.name === Action.UpdateOpponent) {
+      console.log('Action.UpdateOpponent');
+      const { opponent } = (action as UpdateOpponentAction).value;
+      console.log(opponent);
+      const opponentIndex = state.opponents.findIndex(({ id }) => id === opponent.id);
+      const updatedOpponents = [...state.opponents].splice(opponentIndex, 1, opponent);
+
+      return set(['opponents'], updatedOpponents)(state);
     }
 
     if (action.name === Action.RemoveOpponent) {
@@ -104,13 +113,14 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
 
     if (action.name === Action.SetNextPlayerTurn) {
-      let nextPlayerIndex;
-      if (state.isReversePlayDirection) {
-        nextPlayerIndex = state.playerTurn !== -1 ? state.playerTurn - 1 : state.opponents.length - 1;
-      } else {
-        nextPlayerIndex = state.playerTurn >= state.opponents.length - 1 ? -1 : state.playerTurn + 1;
-      }
-      return set(['playerTurn'], nextPlayerIndex)(state);
+      const { position } = action.value;
+      // let nextPlayerIndex;
+      // if (state.isReversePlayDirection) {
+      //   nextPlayerIndex = state.playerTurn !== -1 ? state.playerTurn - 1 : state.opponents.length - 1;
+      // } else {
+      //   nextPlayerIndex = state.playerTurn >= state.opponents.length - 1 ? -1 : state.playerTurn + 1;
+      // }
+      return set(['playerTurn'], position)(state);
     }
 
     if (action.name === Action.PlayerDrawsNewCard) {

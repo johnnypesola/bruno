@@ -1,5 +1,5 @@
 import express from 'express';
-import socketIo from 'socket.io';
+import socketIo, { Namespace } from 'socket.io';
 import { createServer, Server } from 'http';
 import { ApiEvent } from '../../src/types/events';
 import { ServiceType } from './services';
@@ -30,8 +30,9 @@ export class ApiServer {
     });
   }
 
-  public addEventListener(event: ApiEvent, callback: (any) => void): void {
-    this.io.on(event, callback);
+  public on(event: ApiEvent, callback: (any) => void): socketIo.Namespace {
+    console.log('Added eventlistener for ', event);
+    return this.io.on(event, callback);
   }
 
   public addService(name: ServiceName, instance: ServiceType): void {
@@ -47,19 +48,6 @@ export class ApiServer {
   public emit(event: ApiEvent, data: any): socketIo.Namespace {
     return this.io.emit(event, data);
   }
-
-  // this.io.on(ChatEvent.CONNECT, (socket: any) => {
-  //   console.log('Connected client on port %s.', this.port);
-
-  //   socket.on(ChatEvent.MESSAGE, (m: ChatMessage) => {
-  //     console.log('[server](message): %s', JSON.stringify(m));
-  //     this.io.emit('message', m);
-  //   });
-
-  //   socket.on(ChatEvent.DISCONNECT, () => {
-  //     console.log('Client disconnected');
-  //   });
-  // });
 
   get app(): express.Application {
     return this._app;

@@ -26,7 +26,9 @@ const App: React.FC = () => {
     const isPlayerInGame = !state.player.hasExitedGame;
     if (!isPlayerInGame || !isPlayersTurn) return;
 
-    socket.emit(PlayerEvent.PlayCard, cardIndex);
+    console.log('Playing card! emitting stuff!');
+
+    socket.emit(PlayerEvent.PlaysCard, cardIndex);
 
     // if (doCardsMatch(cardInHand, getTopCard(state.cardPile))) {
     //   dispatch({

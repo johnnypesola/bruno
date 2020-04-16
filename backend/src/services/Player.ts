@@ -1,28 +1,50 @@
-import { Player } from '../../../src/types/commonTypes';
+import { Player, InitPlayerData, Opponent, CardInHand } from '../../../src/types/commonTypes';
 import { getInitialHand } from '../../utils';
-import { PlayerEvent } from '../../../src/types/events';
+import { PlayerEvent, OpponentEvent } from '../../../src/types/events';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
-
-export interface InitPlayerData {
-  newPlayer: Player;
-  otherPlayers: Player[];
-}
+import { userId } from '../eventListeners';
+import { ServiceName } from '../../../src/types/services';
+import { CardPileService } from './CardPile';
 
 export class PlayerService extends BaseService {
   players: Player[];
+  playerTurnPosition: number;
 
   constructor(api: ApiServer) {
     super(api);
     this.players = [];
+    this.playerTurnPosition = 0;
   }
 
   // async getPlayers(): Promise<Player[]> {
   //   return this.players;
   // }
 
-  async playCard(cardIndex: number, something): Promise<void> {
-    console.log(cardIndex, something);
+  async playCard(id: userId, cardIndex: number, socket: any): Promise<void> {
+    const player = this.players.find(player => player.id === id);
+    const cardToPlay = player.cards[cardIndex];
+
+    console.log('is players turn', this.isPlayersTurn(id));
+    if (!this.isPlayersTurn(id)) return;
+
+    this.canPlayCard(cardToPlay).then(() => {
+      console.log('player can play card');
+      const playedCard = player.cards.splice(cardIndex, 1)[0];
+      this.api.service<CardPileService>(ServiceName.CardPile).addCardToPile(playedCard);
+
+      socket.emit(PlayerEvent.PlayedCard, cardIndex);
+
+      // Emit update to opponents about players cards.
+      const opponent: Opponent = {
+        ...player,
+        cards: player.cards.map(() => null),
+      };
+
+      socket.broadcast.emit(OpponentEvent.OpponentUpdate, opponent);
+
+      this.nextPlayersTurn();
+    });
   }
 
   async addPlayer(id: string): Promise<string> {
@@ -30,18 +52,21 @@ export class PlayerService extends BaseService {
       id,
       cards: getInitialHand(false),
       hasExitedGame: false,
-      position: this.getFreeTablePosition(this.players),
+      position: this.getFreeTablePosition(),
     };
+    const newPlayerAsOpponent: Opponent = { ...newPlayer, cards: newPlayer.cards.map(() => null) };
 
-    const otherPlayers = [...this.players];
+    const opponents: Opponent[] = this.players.map(player => {
+      return { ...player, cards: player.cards.map(() => null) };
+    });
 
     this.players.push(newPlayer);
     console.log(`Added player for client with id: ${id} (table position: ${newPlayer.position})`);
 
-    const initPlayerData: InitPlayerData = { newPlayer, otherPlayers };
+    const initPlayerData: InitPlayerData = { newPlayer, opponents };
 
     this.api.emit(PlayerEvent.PlayerInit, initPlayerData);
-    this.api.emit(PlayerEvent.PlayerAdded, newPlayer);
+    this.api.emit(OpponentEvent.OpponentAdded, newPlayerAsOpponent);
     return id;
   }
 
@@ -53,9 +78,9 @@ export class PlayerService extends BaseService {
     return id;
   }
 
-  private getFreeTablePosition = (players: Player[]): number => {
-    let freePos = 1;
-    const takenPositions = players.map(player => player.position).sort();
+  private getFreeTablePosition = (): number => {
+    let freePos = 0;
+    const takenPositions = this.players.map(player => player.position).sort();
     takenPositions.every(pos => {
       if (freePos === pos) {
         freePos = pos + 1;
@@ -64,4 +89,23 @@ export class PlayerService extends BaseService {
     });
     return freePos;
   };
+
+  private async canPlayCard(card: CardInHand): Promise<void> {
+    const topCard = await this.api.service<CardPileService>(ServiceName.CardPile).getTopCard();
+    const canPlay = topCard.value === card.value || card.color === topCard.color;
+
+    if (canPlay) return Promise.resolve();
+  }
+
+  private isPlayersTurn(id: userId): boolean {
+    return this.players.find(player => player.id === id).position === this.playerTurnPosition;
+  }
+
+  private nextPlayersTurn(): void {
+    const maxPos = this.players.length - 1;
+    const nextPos = this.playerTurnPosition + 1;
+    this.playerTurnPosition = nextPos <= maxPos ? nextPos : 0;
+
+    this.api.emit(PlayerEvent.NextPlayerTurn, this.playerTurnPosition);
+  }
 }

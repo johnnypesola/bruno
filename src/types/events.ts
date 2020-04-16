@@ -1,4 +1,6 @@
-export type ApiEvent = SystemEvent | PlayerEvent | CardPileEvent;
+import { CardInHand } from './commonTypes';
+
+export type ApiEvent = SystemEvent | PlayerEvent | OpponentEvent | CardPileEvent;
 
 export enum SystemEvent {
   NewConnection = 'connection',
@@ -9,7 +11,15 @@ export enum PlayerEvent {
   PlayerAdded = 'PlayerAdded',
   PlayerInit = 'PlayerInit',
   PlayerRemoved = 'PlayerRemoved',
-  PlayCard = 'PlayCard',
+  PlaysCard = 'PlaysCard',
+  PlayedCard = 'PlayedCard',
+  NextPlayerTurn = 'NextPlayerTurn',
+}
+
+export enum OpponentEvent {
+  OpponentAdded = 'OpponentAdded',
+  OpponentRemoved = 'OpponentRemoved',
+  OpponentUpdate = 'OpponentUpdate',
 }
 
 export enum CardPileEvent {
