@@ -1,5 +1,4 @@
 import { useEffect, useRef, useContext } from 'react';
-import { ServiceName } from '../types/services';
 import { PlayerEvent, OpponentEvent, CardPileEvent } from '../types/events';
 import io from 'socket.io-client';
 import { GameStateContext } from '..';
@@ -8,7 +7,7 @@ import { Action } from '../types/gameStateActionTypes';
 
 const useApi = (): SocketIOClient.Socket => {
   const socket = useRef<SocketIOClient.Socket>();
-  const { state, dispatch } = useContext(GameStateContext);
+  const { dispatch } = useContext(GameStateContext);
 
   useEffect(() => {
     socket.current = io('http://localhost:8080');
@@ -37,8 +36,6 @@ const useApi = (): SocketIOClient.Socket => {
         name: Action.UpdateCardPile,
         value: { cards: initData.cardsInPile },
       });
-
-      console.log('initData.playerTurnPosition', initData.playerTurnPosition);
     });
 
     socket.current.on(OpponentEvent.OpponentAdded, (opponent: Opponent) => {
@@ -54,7 +51,6 @@ const useApi = (): SocketIOClient.Socket => {
         name: Action.RemoveOpponent,
         value: { id },
       });
-      console.log('Opponent Removed', id);
     });
 
     socket.current.on(OpponentEvent.OpponentUpdate, (opponent: Opponent) => {
@@ -62,7 +58,6 @@ const useApi = (): SocketIOClient.Socket => {
         name: Action.UpdateOpponent,
         value: { opponent },
       });
-      console.log('Opponent Updated', opponent.id);
     });
 
     socket.current.on(PlayerEvent.NextPlayerTurn, (position: number) => {
@@ -70,28 +65,22 @@ const useApi = (): SocketIOClient.Socket => {
         name: Action.SetPlayerTurn,
         value: { position },
       });
-      console.log('Next player turn', position);
+    });
+
+    socket.current.on(PlayerEvent.PickedUpCard, (card: CardInHand) => {
+      dispatch({
+        name: Action.PlayerPickedUpCard,
+        value: { card },
+      });
     });
 
     socket.current.on(CardPileEvent.CardAddedToPile, (card: CardInPile) => {
-      console.log('Card added to pile', card);
-      console.log('CardPile in state', state.cardPile);
-
       dispatch({
         name: Action.AddCardToPile,
         value: { card },
       });
     });
-
-    // getPlayers(app);
   }, []);
-
-  // const getPlayers = (app: Application<any>): void => {
-  //   app
-  //     .service(Service.Player)
-  //     .find()
-  //     .then((response: string) => console.log('GET PLAYERS:', response));
-  // };
 
   return socket.current as SocketIOClient.Socket;
 };

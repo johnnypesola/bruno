@@ -1,5 +1,5 @@
 import { Player, InitPlayerData, Opponent, CardInHand } from '../../../src/types/commonTypes';
-import { getInitialHand } from '../../utils';
+import { getInitialHand, getRandomCard } from '../../utils';
 import { PlayerEvent, OpponentEvent } from '../../../src/types/events';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
@@ -16,10 +16,6 @@ export class PlayerService extends BaseService {
     this.players = [];
     this.playerTurnPosition = 1;
   }
-
-  // async getPlayers(): Promise<Player[]> {
-  //   return this.players;
-  // }
 
   async playCard(id: userId, cardIndex: number, socket: any): Promise<void> {
     const player = this.players.find(player => player.id === id);
@@ -47,6 +43,25 @@ export class PlayerService extends BaseService {
         this.nextPlayersTurn();
       })
       .catch(() => {});
+  }
+
+  async PicksUpCard(id: userId, socket: any): Promise<void> {
+    if (!this.isPlayersTurn(id)) return;
+
+    const card = getRandomCard(false);
+    const player = this.players.find(player => player.id === id);
+    player.cards.push(card);
+
+    socket.emit(PlayerEvent.PickedUpCard, card);
+
+    const opponent: Opponent = {
+      ...player,
+      cards: player.cards.map(() => null),
+    };
+
+    socket.broadcast.emit(OpponentEvent.OpponentUpdate, opponent);
+
+    this.nextPlayersTurn();
   }
 
   async addPlayer(id: string, socket: any): Promise<string> {

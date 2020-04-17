@@ -23,17 +23,10 @@ export default (api: ApiServer): void => {
       console.log(`Player ${userId} played card with index`, cardIndex);
       api.service<PlayerService>(ServiceName.Player).playCard(userId, cardIndex, socket);
     });
+
+    socket.on(PlayerEvent.PicksUpCard, () => {
+      console.log(`Player ${userId} picked up card`);
+      api.service<PlayerService>(ServiceName.Player).PicksUpCard(userId, socket);
+    });
   });
-
-  // api.addEventListener(SystemEvent.ConnectionClosed, socket => {
-  //   const userId = socket.id;
-  //   console.log(`user ${userId} disconnected`);
-  //   api.service<PlayerService>(ServiceName.Player).removePlayer(userId);
-  // });
-
-  // api.addEventListener(PlayerEvent.PlayCard, (socket,  => {
-  // const userId = socket.id;
-  // console.log(`Player played card`, socket);
-  // api.service<PlayerService>(ServiceName.Player).removePlayer(userId);
-  // });
 };

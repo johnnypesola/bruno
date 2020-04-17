@@ -1,5 +1,3 @@
-import { CardInHand } from './commonTypes';
-
 export type ApiEvent = SystemEvent | PlayerEvent | OpponentEvent | CardPileEvent;
 
 export enum SystemEvent {
@@ -13,6 +11,8 @@ export enum PlayerEvent {
   PlayerRemoved = 'PlayerRemoved',
   PlaysCard = 'PlaysCard',
   PlayedCard = 'PlayedCard',
+  PicksUpCard = 'PicksUpCard',
+  PickedUpCard = 'PickedUpCard',
   NextPlayerTurn = 'NextPlayerTurn',
 }
 

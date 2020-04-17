@@ -9,7 +9,7 @@ export enum Action {
   PlayerPlaysCard,
   OpponentPlaysCard,
   OpponentDrawsCard,
-  PlayerDrawsNewCard,
+  PlayerPickedUpCard,
   SetPlayerTurn,
   HandleAnyPlayerOutOfCards,
   HandleCardEffectForPlayer,
@@ -54,8 +54,9 @@ export interface OpponentDrawsCardAction {
   value: { opponentIndex: number };
 }
 
-export interface PlayerDrawsCardAction {
-  name: Action.PlayerDrawsNewCard;
+export interface PlayerPicksUpCardAction {
+  name: Action.PlayerPickedUpCard;
+  value: { card: CardInHand };
 }
 
 export interface SetPlayerTurn {
@@ -92,7 +93,7 @@ export type GameStateAction =
   | PlayerPlaysCardAction
   | OpponentPlaysCardAction
   | OpponentDrawsCardAction
-  | PlayerDrawsCardAction
+  | PlayerPicksUpCardAction
   | SetPlayerTurn
   | HandleAnyPlayerOutOfCards
   | HandleCardEffectForPlayer

@@ -1,51 +1,37 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext } from 'react';
 import Card from './components/Card';
 import Table from './components/Table';
-import { doCardsMatch, getTopCard } from './utils';
 import CardDeck from './components/CardDeck';
 import { CardInHand, Opponent, CardColor, CardValue } from './types/commonTypes';
 import { GameStateContext } from '.';
-import { Action } from './types/gameStateActionTypes';
-import useAIPlayers from './hooks/useAIPlayers';
 import Hand from './components/Hand';
 import CardPile from './components/CardPile';
 
 import styled from 'styled-components';
 import useApi from './hooks/useApi';
-import { ServiceName } from './types/services';
 import { PlayerEvent } from './types/events';
 
 const App: React.FC = () => {
-  const { state, dispatch } = useContext(GameStateContext);
+  const { state } = useContext(GameStateContext);
 
   const socket = useApi();
-  // useAIPlayers();
 
-  const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
+  const canPlay = (): boolean => {
     const isPlayersTurn = state.playerTurn === state.player.position;
     const isPlayerInGame = !state.player.hasExitedGame;
-    if (!isPlayerInGame || !isPlayersTurn) return;
-
-    console.log('Playing card! emitting stuff!');
-
-    socket.emit(PlayerEvent.PlaysCard, cardIndex);
-
-    // if (doCardsMatch(cardInHand, getTopCard(state.cardPile))) {
-    //   dispatch({
-    //     name: Action.PlayerPlaysCard,
-    //     value: { cardIndex },
-    //   });
-    //   dispatch({ name: Action.HandleAnyPlayerOutOfCards });
-    //   setTimeout(() => dispatch({ name: Action.SetPlayerTurn }), 1000);
-    // }
+    return isPlayerInGame && isPlayersTurn;
   };
 
-  const GetMessagesButton = styled.button`
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    border: 5px solid pink;
-  `;
+  const PickUpCard = (): void => {
+    if (!canPlay()) return;
+    socket.emit(PlayerEvent.PicksUpCard);
+  };
+
+  const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
+    if (!canPlay()) return;
+
+    socket.emit(PlayerEvent.PlaysCard, cardIndex);
+  };
 
   return (
     <>
@@ -63,7 +49,7 @@ const App: React.FC = () => {
       ))}
 
       <Table>
-        <CardDeck />
+        <CardDeck onClick={() => PickUpCard()} />
         <CardPile />
       </Table>
 
