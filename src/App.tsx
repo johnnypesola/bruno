@@ -22,7 +22,7 @@ const App: React.FC = () => {
   // useAIPlayers();
 
   const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
-    const isPlayersTurn = state.playerTurn === -1;
+    const isPlayersTurn = state.playerTurn === state.player.position;
     const isPlayerInGame = !state.player.hasExitedGame;
     if (!isPlayerInGame || !isPlayersTurn) return;
 
@@ -36,13 +36,9 @@ const App: React.FC = () => {
     //     value: { cardIndex },
     //   });
     //   dispatch({ name: Action.HandleAnyPlayerOutOfCards });
-    //   setTimeout(() => dispatch({ name: Action.SetNextPlayerTurn }), 1000);
+    //   setTimeout(() => dispatch({ name: Action.SetPlayerTurn }), 1000);
     // }
   };
-
-  useEffect(() => {
-    if (state.playerTurn === -1) dispatch({ name: Action.HandleCardEffectForPlayer });
-  }, [state.cardPile, state.playerTurn, dispatch]);
 
   const GetMessagesButton = styled.button`
     position: fixed;
@@ -54,7 +50,12 @@ const App: React.FC = () => {
   return (
     <>
       {state.opponents.map((opponent: Opponent, index) => (
-        <Hand key={index} tablePosition={opponent.position} cardsCount={opponent.cards.length}>
+        <Hand
+          key={index}
+          isHighlighted={state.playerTurn === opponent.position}
+          tablePosition={opponent.position}
+          cardsCount={opponent.cards.length}
+        >
           {opponent.cards.map((card, index) => (
             <Card key={index} color={CardColor.Blue} value={CardValue.Eight} isConcealed={true} />
           ))}
@@ -66,7 +67,11 @@ const App: React.FC = () => {
         <CardPile />
       </Table>
 
-      <Hand tablePosition={0} cardsCount={state.player.cards.length}>
+      <Hand
+        isHighlighted={state.playerTurn === state.player.position}
+        tablePosition={0}
+        cardsCount={state.player.cards.length}
+      >
         {state.player.cards.map((card, index) => (
           <Card
             key={index}
@@ -77,6 +82,9 @@ const App: React.FC = () => {
           />
         ))}
       </Hand>
+      <span style={{ position: 'fixed', top: '10px', left: '10px' }}>
+        playerTurn {state.playerTurn} | player position {state.player.position}
+      </span>
     </>
   );
 };

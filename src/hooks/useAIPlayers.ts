@@ -41,7 +41,7 @@ const useAIPlayers = (): void => {
       }
 
       dispatch({ name: Action.HandleAnyPlayerOutOfCards });
-      // dispatch({ name: Action.SetNextPlayerTurn });
+      // dispatch({ name: Action.SetPlayerTurn });
     }
   }, 1000);
 };

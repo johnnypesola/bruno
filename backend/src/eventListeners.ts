@@ -12,7 +12,7 @@ export default (api: ApiServer): void => {
     const userId: userId = socket.id;
     socket.join(Room.CardPile);
     console.log(`user ${userId} connected`);
-    api.service<PlayerService>(ServiceName.Player).addPlayer(userId);
+    api.service<PlayerService>(ServiceName.Player).addPlayer(userId, socket);
 
     socket.on(SystemEvent.ConnectionClosed, () => {
       console.log(`user ${userId} disconnected`);

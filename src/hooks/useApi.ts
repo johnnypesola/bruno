@@ -1,24 +1,44 @@
 import { useEffect, useRef, useContext } from 'react';
 import { ServiceName } from '../types/services';
-import { PlayerEvent, OpponentEvent } from '../types/events';
+import { PlayerEvent, OpponentEvent, CardPileEvent } from '../types/events';
 import io from 'socket.io-client';
 import { GameStateContext } from '..';
-import { Opponent, InitPlayerData } from '../types/commonTypes';
+import { Opponent, InitPlayerData, CardInHand, CardInPile } from '../types/commonTypes';
 import { Action } from '../types/gameStateActionTypes';
 
 const useApi = (): SocketIOClient.Socket => {
   const socket = useRef<SocketIOClient.Socket>();
-  const { dispatch } = useContext(GameStateContext);
+  const { state, dispatch } = useContext(GameStateContext);
 
   useEffect(() => {
     socket.current = io('http://localhost:8080');
 
     // Receive real-time events through Socket.io
+    socket.current.on(PlayerEvent.PlayedCard, (newCards: CardInHand[]) => {
+      dispatch({
+        name: Action.PlayerPlaysCard,
+        value: { newCards },
+      });
+    });
     socket.current.on(PlayerEvent.PlayerInit, (initData: InitPlayerData) => {
+      dispatch({
+        name: Action.InitPlayer,
+        value: { player: initData.newPlayer },
+      });
       dispatch({
         name: Action.AddOpponents,
         value: { opponents: initData.opponents },
       });
+      dispatch({
+        name: Action.SetPlayerTurn,
+        value: { position: initData.playerTurnPosition },
+      });
+      dispatch({
+        name: Action.UpdateCardPile,
+        value: { cards: initData.cardsInPile },
+      });
+
+      console.log('initData.playerTurnPosition', initData.playerTurnPosition);
     });
 
     socket.current.on(OpponentEvent.OpponentAdded, (opponent: Opponent) => {
@@ -47,10 +67,20 @@ const useApi = (): SocketIOClient.Socket => {
 
     socket.current.on(PlayerEvent.NextPlayerTurn, (position: number) => {
       dispatch({
-        name: Action.SetNextPlayerTurn,
+        name: Action.SetPlayerTurn,
         value: { position },
       });
       console.log('Next player turn', position);
+    });
+
+    socket.current.on(CardPileEvent.CardAddedToPile, (card: CardInPile) => {
+      console.log('Card added to pile', card);
+      console.log('CardPile in state', state.cardPile);
+
+      dispatch({
+        name: Action.AddCardToPile,
+        value: { card },
+      });
     });
 
     // getPlayers(app);

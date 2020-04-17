@@ -49,7 +49,7 @@ const CardDeck: React.FC = () => {
     const isPlayerInGame = !state.player.hasExitedGame;
     if (!isPlayerInGame || !isPlayersTurn) return;
     dispatch({ name: Action.PlayerDrawsNewCard });
-    // setTimeout(() => dispatch({ name: Action.SetNextPlayerTurn }), 1000);
+    // setTimeout(() => dispatch({ name: Action.SetPlayerTurn }), 1000);
   };
 
   return (

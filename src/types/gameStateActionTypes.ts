@@ -1,6 +1,7 @@
-import { Opponent } from './commonTypes';
+import { Opponent, Player, CardInHand, CardInPile } from './commonTypes';
 
 export enum Action {
+  InitPlayer,
   AddOpponent,
   AddOpponents,
   RemoveOpponent,
@@ -9,12 +10,18 @@ export enum Action {
   OpponentPlaysCard,
   OpponentDrawsCard,
   PlayerDrawsNewCard,
-  SetNextPlayerTurn,
+  SetPlayerTurn,
   HandleAnyPlayerOutOfCards,
   HandleCardEffectForPlayer,
   HandleCardEffectForOpponent,
+  UpdateCardPile,
+  AddCardToPile,
 }
 
+export interface InitPlayerAction {
+  name: Action.InitPlayer;
+  value: { player: Player };
+}
 export interface AddOpponentAction {
   name: Action.AddOpponent;
   value: { opponent: Opponent };
@@ -35,7 +42,7 @@ export interface RemoveOpponentAction {
 
 export interface PlayerPlaysCardAction {
   name: Action.PlayerPlaysCard;
-  value: { cardIndex: number };
+  value: { newCards: CardInHand[] };
 }
 
 export interface OpponentPlaysCardAction {
@@ -51,8 +58,8 @@ export interface PlayerDrawsCardAction {
   name: Action.PlayerDrawsNewCard;
 }
 
-export interface SetNextPlayerTurn {
-  name: Action.SetNextPlayerTurn;
+export interface SetPlayerTurn {
+  name: Action.SetPlayerTurn;
   value: { position: number };
 }
 
@@ -67,8 +74,17 @@ export interface HandleCardEffectForOpponent {
   name: Action.HandleCardEffectForOpponent;
   value: { opponentIndex: number };
 }
+export interface UpdateCardPileAction {
+  name: Action.UpdateCardPile;
+  value: { cards: CardInPile[] };
+}
+export interface AddCardToPileAction {
+  name: Action.AddCardToPile;
+  value: { card: CardInPile };
+}
 
 export type GameStateAction =
+  | InitPlayerAction
   | AddOpponentAction
   | AddOpponentsAction
   | UpdateOpponentAction
@@ -77,7 +93,9 @@ export type GameStateAction =
   | OpponentPlaysCardAction
   | OpponentDrawsCardAction
   | PlayerDrawsCardAction
-  | SetNextPlayerTurn
+  | SetPlayerTurn
   | HandleAnyPlayerOutOfCards
   | HandleCardEffectForPlayer
-  | HandleCardEffectForOpponent;
+  | HandleCardEffectForOpponent
+  | UpdateCardPileAction
+  | AddCardToPileAction;

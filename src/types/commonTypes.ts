@@ -54,6 +54,8 @@ export interface Player extends BasePlayer {
 export interface InitPlayerData {
   newPlayer: Player;
   opponents: Opponent[];
+  playerTurnPosition: number;
+  cardsInPile: CardInPile[];
 }
 
 export interface GameState {

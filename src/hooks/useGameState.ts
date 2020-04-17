@@ -12,12 +12,22 @@ import {
   RemoveOpponentAction,
   AddOpponentsAction,
   UpdateOpponentAction,
+  InitPlayerAction,
+  UpdateCardPileAction,
+  AddCardToPileAction,
 } from '../types/gameStateActionTypes';
 import { getTopCard, getInitialHand, getRandomCard, toPileCard } from '../utils';
 import { GameState, CardValue } from '../types/commonTypes';
 
 const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const reducer = (state: GameState, action: GameStateAction): GameState => {
+    if (action.name === Action.InitPlayer) {
+      const { player } = (action as InitPlayerAction).value;
+      console.log('Action.InitPlayer', player);
+
+      return set(['player'], player)(state);
+    }
+
     if (action.name === Action.AddOpponent) {
       console.log('Action.AddOpponent');
 
@@ -34,9 +44,11 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     if (action.name === Action.UpdateOpponent) {
       console.log('Action.UpdateOpponent');
       const { opponent } = (action as UpdateOpponentAction).value;
-      console.log(opponent);
+      console.log('opponent!', opponent);
       const opponentIndex = state.opponents.findIndex(({ id }) => id === opponent.id);
       const updatedOpponents = [...state.opponents].splice(opponentIndex, 1, opponent);
+
+      console.log('updated opponents', updatedOpponents);
 
       return set(['opponents'], updatedOpponents)(state);
     }
@@ -52,19 +64,15 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
 
     if (action.name === Action.PlayerPlaysCard) {
-      const { cardIndex } = (action as PlayerPlaysCardAction).value;
-      const newTopCard = toPileCard(state.player.cards[cardIndex]);
-      const newCards = state.player.cards.filter((card, index) => index !== cardIndex);
+      const { newCards } = (action as PlayerPlaysCardAction).value;
 
-      let newState = flow(
+      console.log('PlayerPlaysCard', newCards);
+
+      const newState = flow(
         // Update state in sequence
         set(['player', 'cards'], newCards),
-        set(['cardPile'], [...state.cardPile, newTopCard]),
       )(state);
 
-      if (newTopCard.value === CardValue.Reverse) {
-        newState = set(['isReversePlayDirection'], !state.isReversePlayDirection)(newState);
-      }
       return newState;
     }
 
@@ -72,19 +80,29 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       const { cardIndex, opponentIndex } = (action as OpponentPlaysCardAction).value;
       const opponent = state.opponents[opponentIndex];
       // const newTopCard = toPileCard(opponent.cards[cardIndex]);
-      const newTopCard = toPileCard(getRandomCard());
+      // const newTopCard = toPileCard(getRandomCard());
       const newCards = opponent.cards.filter((card, index) => index !== cardIndex);
 
-      let newState = flow(
+      const newState = flow(
         // Update state in sequence
         set(['opponents', opponentIndex, 'cards'], newCards),
-        set(['cardPile'], [...state.cardPile, newTopCard]),
       )(state);
 
-      if (newTopCard.value === CardValue.Reverse) {
-        newState = set(['isReversePlayDirection'], !state.isReversePlayDirection)(newState);
-      }
+      // if (newTopCard.value === CardValue.Reverse) {
+      //   newState = set(['isReversePlayDirection'], !state.isReversePlayDirection)(newState);
+      // }
       return newState;
+    }
+
+    if (action.name === Action.UpdateCardPile) {
+      const { cards } = (action as UpdateCardPileAction).value;
+
+      return set(['cardPile'], [...cards])(state);
+    }
+    if (action.name === Action.AddCardToPile) {
+      const { card } = (action as AddCardToPileAction).value;
+
+      return set(['cardPile'], [...state.cardPile, card])(state);
     }
 
     if (action.name === Action.OpponentDrawsCard) {
@@ -106,13 +124,14 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
 
     if (action.name === Action.HandleCardEffectForPlayer) {
-      if (getTopCard(state.cardPile).value == CardValue.PlusTwo) {
+      const topCard = getTopCard(state.cardPile);
+      if (topCard && topCard.value == CardValue.PlusTwo) {
         const newCards = [getRandomCard(false), getRandomCard(false)];
         return set(['player', 'cards'], [...state.player.cards, ...newCards])(state);
       }
     }
 
-    if (action.name === Action.SetNextPlayerTurn) {
+    if (action.name === Action.SetPlayerTurn) {
       const { position } = action.value;
       // let nextPlayerIndex;
       // if (state.isReversePlayDirection) {
@@ -146,12 +165,12 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   };
 
   const initialGameState: GameState = {
-    player: { id: 'Player', cards: getInitialHand(false), hasExitedGame: false, position: 0 },
+    player: { id: 'Player', cards: [], hasExitedGame: false, position: 0 },
     opponents: [
       // { id: 'Benny', cards: [], position: TablePosition.OpponentLeft, hasExitedGame: false },
       // { id: 'Fanny', cards: [], position: TablePosition.OpponentRight, hasExitedGame: false },
     ],
-    cardPile: [toPileCard(getRandomCard())],
+    cardPile: [],
     playerTurn: -1,
     isReversePlayDirection: false,
   };

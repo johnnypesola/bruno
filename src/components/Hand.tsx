@@ -27,17 +27,26 @@ const getCardMargin = (cardsCount: number, isPlayer: boolean): string => {
   const factor = isPlayer ? 3 : 8;
   const mininumMargin = isPlayer ? -40 : -60;
   const val = Math.max(cardsCount * -factor, mininumMargin);
-  return `2px 2px 2px ${val}px`;
+  return `0px 2px -5px ${val}px`;
+};
+
+const getHighlightedStyle = (isHighlighted: boolean): string => {
+  if (!isHighlighted) return '';
+  return `
+    box-shadow: -20px 0 40px 10px rgba(255,255,255,0.7);
+  `;
 };
 
 interface HandProps {
   tablePosition: number;
   cardsCount: number;
+  isHighlighted: boolean;
 }
 
 export default styled.div<HandProps>`
   margin: 20px;
   ${({ tablePosition }) => getTablePositionStyle(tablePosition)};
+  ${({ isHighlighted }) => getHighlightedStyle(isHighlighted)}
 
   > * {
     margin: ${({ cardsCount, tablePosition }) => {
