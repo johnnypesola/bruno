@@ -1,7 +1,5 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { GameStateContext } from '..';
-import { Action } from '../types/gameStateActionTypes';
 
 const Container = styled.div`
   margin: 2px;
@@ -41,19 +39,13 @@ const Text = styled.div`
   transform: rotate(12deg);
 `;
 
-const CardDeck: React.FC = () => {
-  const { state, dispatch } = useContext(GameStateContext);
+interface ComponentProps {
+  onClick: () => void;
+}
 
-  const onClickHandler = (): void => {
-    const isPlayersTurn = state.playerTurn === -1;
-    const isPlayerInGame = !state.player.hasExitedGame;
-    if (!isPlayerInGame || !isPlayersTurn) return;
-    dispatch({ name: Action.PlayerDrawsNewCard });
-    setTimeout(() => dispatch({ name: Action.SetNextPlayerTurn }), 1000);
-  };
-
+const CardDeck: React.FC<ComponentProps> = ({ onClick }) => {
   return (
-    <Container onClick={onClickHandler}>
+    <Container onClick={onClick}>
       <Text>Bruno</Text>
     </Container>
   );

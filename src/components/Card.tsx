@@ -1,27 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-
-export enum CardColor {
-  Red = 'red',
-  Green = 'green',
-  Yellow = 'gold',
-  Blue = 'blue',
-}
-
-export enum CardValue {
-  Zero = '0',
-  One = '1',
-  Two = '2',
-  Three = '3',
-  Four = '4',
-  Five = '5',
-  Six = '6',
-  Seven = '7',
-  Eight = '8',
-  Nine = '9',
-  Reverse = '⇄',
-  PlusTwo = '+2',
-}
+import { CardValue, CardColor } from '../types/commonTypes';
 
 interface ComponentProps {
   value: CardValue;
