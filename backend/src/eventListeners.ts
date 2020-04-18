@@ -1,8 +1,9 @@
 import { ServiceName } from '../../src/types/services';
 import { ApiServer } from './ApiServer';
-import { SystemEvent, PlayerEvent } from '../../src/types/events';
 import { Room } from './rooms';
 import { PlayerService } from './services/Player';
+import { SystemEvent } from '../../src/types/serverEventTypes';
+import { ClientEvent } from '../../src/types/clientEventTypes';
 
 export type userId = string;
 
@@ -19,12 +20,12 @@ export default (api: ApiServer): void => {
       api.service<PlayerService>(ServiceName.Player).removePlayer(userId);
     });
 
-    socket.on(PlayerEvent.PlaysCard, (cardIndex: number) => {
+    socket.on(ClientEvent.PlaysCard, (cardIndex: number) => {
       console.log(`Player ${userId} played card with index`, cardIndex);
       api.service<PlayerService>(ServiceName.Player).playCard(userId, cardIndex, socket);
     });
 
-    socket.on(PlayerEvent.PicksUpCard, () => {
+    socket.on(ClientEvent.PicksUpCard, () => {
       console.log(`Player ${userId} picked up card`);
       api.service<PlayerService>(ServiceName.Player).PicksUpCard(userId, socket);
     });

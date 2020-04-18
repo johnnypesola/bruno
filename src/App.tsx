@@ -6,10 +6,8 @@ import { CardInHand, Opponent, CardColor, CardValue } from './types/commonTypes'
 import { GameStateContext } from '.';
 import Hand from './components/Hand';
 import CardPile from './components/CardPile';
-
-import styled from 'styled-components';
 import useApi from './hooks/useApi';
-import { PlayerEvent } from './types/events';
+import { ClientEvent } from './types/clientEventTypes';
 
 const App: React.FC = () => {
   const { state } = useContext(GameStateContext);
@@ -24,13 +22,13 @@ const App: React.FC = () => {
 
   const PickUpCard = (): void => {
     if (!canPlay()) return;
-    socket.emit(PlayerEvent.PicksUpCard);
+    socket.emit(ClientEvent.PicksUpCard);
   };
 
   const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
     if (!canPlay()) return;
 
-    socket.emit(PlayerEvent.PlaysCard, cardIndex);
+    socket.emit(ClientEvent.PlaysCard, cardIndex);
   };
 
   return (

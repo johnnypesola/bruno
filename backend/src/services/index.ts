@@ -2,7 +2,6 @@ import { CardPileService } from './CardPile';
 import { PlayerService } from './Player';
 import { ServiceName } from '../../../src/types/services';
 import { ApiServer } from '../ApiServer';
-import { ApiEvent } from '../../../src/types/events';
 
 export type ServiceType = CardPileService | PlayerService;
 

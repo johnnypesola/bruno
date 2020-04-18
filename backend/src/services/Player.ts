@@ -1,6 +1,6 @@
-import { Player, InitPlayerData, Opponent, CardInHand } from '../../../src/types/commonTypes';
+import { Player, InitPlayerDataContent, Opponent, CardInHand } from '../../../src/types/commonTypes';
+import { ServerEvent, InitPlayerData, UpdateOpponentData } from '../../../src/types/serverEventTypes';
 import { getInitialHand, getRandomCard } from '../../utils';
-import { PlayerEvent, OpponentEvent } from '../../../src/types/events';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { userId } from '../eventListeners';
@@ -30,7 +30,7 @@ export class PlayerService extends BaseService {
         const playedCard = player.cards.splice(cardIndex, 1)[0];
         this.api.service<CardPileService>(ServiceName.CardPile).addCardToPile(playedCard);
 
-        socket.emit(PlayerEvent.PlayedCard, player.cards);
+        this.api.typedEmit({ name: ServerEvent.PlayerPlaysCard, value: { newCards: player.cards } }, socket);
 
         // Emit update to opponents about players cards.
         const opponent: Opponent = {
@@ -38,11 +38,13 @@ export class PlayerService extends BaseService {
           cards: player.cards.map(() => null),
         };
 
-        socket.broadcast.emit(OpponentEvent.OpponentUpdate, opponent);
+        this.api.typedBroadcastEmit({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
 
         this.nextPlayersTurn();
       })
-      .catch(() => {});
+      .catch(() => {
+        console.log('Player could not play card', cardToPlay);
+      });
   }
 
   async PicksUpCard(id: userId, socket: any): Promise<void> {
@@ -52,14 +54,14 @@ export class PlayerService extends BaseService {
     const player = this.players.find(player => player.id === id);
     player.cards.push(card);
 
-    socket.emit(PlayerEvent.PickedUpCard, card);
+    this.api.typedEmit({ name: ServerEvent.PlayerPickedUpCard, value: { card } }, socket);
 
     const opponent: Opponent = {
       ...player,
       cards: player.cards.map(() => null),
     };
 
-    socket.broadcast.emit(OpponentEvent.OpponentUpdate, opponent);
+    this.api.typedBroadcastEmit({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
 
     this.nextPlayersTurn();
   }
@@ -84,7 +86,7 @@ export class PlayerService extends BaseService {
 
     const cardsInPile = this.api.service<CardPileService>(ServiceName.CardPile).cardsInPile;
 
-    const initPlayerData: InitPlayerData = {
+    const initPlayerData: InitPlayerDataContent = {
       newPlayer,
       opponents,
       playerTurnPosition: this.playerTurnPosition,
@@ -93,8 +95,8 @@ export class PlayerService extends BaseService {
 
     console.log('this.playerTurnPosition', this.playerTurnPosition);
 
-    socket.emit(PlayerEvent.PlayerInit, initPlayerData);
-    socket.broadcast.emit(OpponentEvent.OpponentAdded, newPlayerAsOpponent);
+    this.api.typedEmit({ name: ServerEvent.InitPlayer, value: initPlayerData }, socket);
+    this.api.typedEmit({ name: ServerEvent.AddOpponent, value: { opponent: newPlayerAsOpponent } });
     return id;
   }
 
@@ -106,7 +108,8 @@ export class PlayerService extends BaseService {
     this.players = this.players.filter(player => player.id !== id);
     console.log(`Removed player for client with id: ${id}`);
 
-    this.api.emit(OpponentEvent.OpponentRemoved, id);
+    this.api.typedEmit({ name: ServerEvent.RemoveOpponent, value: { id } });
+
     return id;
   }
 
@@ -162,6 +165,6 @@ export class PlayerService extends BaseService {
 
     console.log('nextPlayerPos', this.playerTurnPosition);
 
-    this.api.emit(PlayerEvent.NextPlayerTurn, this.playerTurnPosition);
+    this.api.typedEmit({ name: ServerEvent.SetPlayerTurn, value: { position: this.playerTurnPosition } });
   }
 }
