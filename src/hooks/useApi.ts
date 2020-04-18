@@ -12,7 +12,7 @@ const useApi = (): SocketIOClient.Socket => {
     socket.current = io('http://localhost:8080');
 
     // Receive real-time events through Socket.io
-
+    // and dispatch them directly into game state reducer.
     enumAsValues(ServerEvent).forEach(event => {
       socket.current?.on(event, (value: any) => {
         dispatch({
@@ -21,74 +21,6 @@ const useApi = (): SocketIOClient.Socket => {
         });
       });
     });
-
-    // socket.current.on(PlayerEvent.PlayedCard, (newCards: CardInHand[]) => {
-    //   dispatch({
-    //     name: ServerEvent.PlayerPlaysCard,
-    //     value: { newCards },
-    //   });
-    // });
-    // socket.current.on(PlayerEvent.PlayerInit, (initData: InitPlayerData) => {
-    //   dispatch({
-    //     name: ServerEvent.InitPlayer,
-    //     value: { player: initData.newPlayer },
-    //   });
-    //   dispatch({
-    //     name: ServerEvent.AddOpponents,
-    //     value: { opponents: initData.opponents },
-    //   });
-    //   dispatch({
-    //     name: ServerEvent.SetPlayerTurn,
-    //     value: { position: initData.playerTurnPosition },
-    //   });
-    //   dispatch({
-    //     name: ServerEvent.UpdateCardPile,
-    //     value: { cards: initData.cardsInPile },
-    //   });
-    // });
-
-    // socket.current.on(OpponentEvent.OpponentAdded, (opponent: Opponent) => {
-    //   console.log(opponent);
-    //   dispatch({
-    //     name: ServerEvent.AddOpponent,
-    //     value: { opponent },
-    //   });
-    // });
-
-    // socket.current.on(OpponentEvent.OpponentRemoved, (id: string) => {
-    //   dispatch({
-    //     name: ServerEvent.RemoveOpponent,
-    //     value: { id },
-    //   });
-    // });
-
-    // socket.current.on(OpponentEvent.OpponentUpdate, (opponent: Opponent) => {
-    //   dispatch({
-    //     name: ServerEvent.UpdateOpponent,
-    //     value: { opponent },
-    //   });
-    // });
-
-    // socket.current.on(PlayerEvent.NextPlayerTurn, (position: number) => {
-    //   dispatch({
-    //     name: ServerEvent.SetPlayerTurn,
-    //     value: { position },
-    //   });
-    // });
-
-    // socket.current.on(PlayerEvent.PickedUpCard, (card: CardInHand) => {
-    //   dispatch({
-    //     name: ServerEvent.PlayerPickedUpCard,
-    //     value: { card },
-    //   });
-    // });
-
-    // socket.current.on(CardPileEvent.CardAddedToPile, (card: CardInPile) => {
-    //   dispatch({
-    //     name: ServerEvent.AddCardToPile,
-    //     value: { card },
-    //   });
-    // });
   }, []);
 
   return socket.current as SocketIOClient.Socket;
