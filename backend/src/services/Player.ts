@@ -96,7 +96,7 @@ export class PlayerService extends BaseService {
     console.log('this.playerTurnPosition', this.playerTurnPosition);
 
     this.api.typedEmit({ name: ServerEvent.InitPlayer, value: initPlayerData }, socket);
-    this.api.typedEmit({ name: ServerEvent.AddOpponent, value: { opponent: newPlayerAsOpponent } });
+    this.api.typedBroadcastEmit({ name: ServerEvent.AddOpponent, value: { opponent: newPlayerAsOpponent } }, socket);
     return id;
   }
 
