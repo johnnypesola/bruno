@@ -1,9 +1,9 @@
 import express from 'express';
 import socketIo, { Namespace } from 'socket.io';
 import { createServer, Server } from 'http';
-import { ApiEvent } from '../../src/types/events';
 import { ServiceType } from './services';
 import { ServiceName } from '../../src/types/services';
+import { ApiEvent, GameStateAction } from '../../src/types/serverEventTypes';
 // eslint-disable-next-line
 const cors = require('cors');
 
@@ -47,6 +47,13 @@ export class ApiServer {
 
   public emit(event: ApiEvent, data: any): socketIo.Namespace {
     return this.io.emit(event, data);
+  }
+
+  public typedEmit({ name, value }: GameStateAction, socket: any = this.io): void {
+    socket.emit(name, value);
+  }
+  public typedBroadcastEmit({ name, value }: GameStateAction, socket: any): void {
+    socket.broadcast.emit(name, value);
   }
 
   get app(): express.Application {

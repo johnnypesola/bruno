@@ -51,7 +51,7 @@ export interface Player extends BasePlayer {
   position: number;
 }
 
-export interface InitPlayerData {
+export interface InitPlayerDataContent {
   newPlayer: Player;
   opponents: Opponent[];
   playerTurnPosition: number;

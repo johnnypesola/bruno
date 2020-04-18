@@ -1,8 +1,8 @@
 import { CardInPile, CardInHand } from '../../../src/types/commonTypes';
 import { toPileCard, getRandomCard } from '../../utils';
-import { CardPileEvent } from '../../../src/types/events';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
+import { ServerEvent } from '../../../src/types/serverEventTypes';
 
 export class CardPileService extends BaseService {
   cardsInPile: CardInPile[];
@@ -17,7 +17,8 @@ export class CardPileService extends BaseService {
     const pileCard = toPileCard(card);
     this.cardsInPile.push(pileCard);
     console.log(`Added card (${card.value} ${card.color}) to pile`);
-    this.api.emit(CardPileEvent.CardAddedToPile, pileCard);
+
+    this.api.typedEmit({ name: ServerEvent.AddCardToPile, value: { card: pileCard } });
   }
 
   async getTopCard(): Promise<CardInHand> {

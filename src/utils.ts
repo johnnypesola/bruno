@@ -8,6 +8,10 @@ export function randomEnum<T>(anEnum: T): T[keyof T] {
   return enumValues[randomIndex];
 }
 
+export function enumAsValues<T>(anEnum: T): T[keyof T][] {
+  return (Object.values(anEnum) as unknown) as T[keyof T][];
+}
+
 export const getRandomCard = (isConcealed = true): CardInHand => {
   return {
     color: randomEnum(CardColor),
