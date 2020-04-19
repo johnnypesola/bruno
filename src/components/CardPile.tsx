@@ -11,6 +11,21 @@ const Container = styled.div`
 
   > * {
     position: absolute;
+
+    animation-duration: 0.3s;
+    animation-name: laycard;
+  }
+
+  @keyframes laycard {
+    from {
+      margin-top: -100%;
+      opacity: 0;
+    }
+
+    to {
+      margin-top: 0%;
+      opacity: 1;
+    }
   }
 `;
 

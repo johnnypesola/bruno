@@ -10,7 +10,7 @@ const getTablePositionStyle = (tablePosition: number, numberOfPlayers: number): 
       return `
         position: fixed;
         bottom: 0px;
-        transform: rotateZ(0) rotateX(-22deg) rotateY(0deg) translateZ(58px) translateX(-10px) translateY(0px);`;
+        transform: rotateZ(0) rotateX(-22deg) rotateY(0deg) translateZ(80px) translateX(-10px) translateY(-7px);`;
     case 1:
       return `
         position: fixed;
@@ -40,7 +40,8 @@ const getTablePositionStyle = (tablePosition: number, numberOfPlayers: number): 
 const getCardMargin = (cardsCount: number, isPlayer: boolean): string => {
   const factor = isPlayer ? 3 : 8;
   const mininumMargin = isPlayer ? -40 : -60;
-  const val = Math.max(cardsCount * -factor, mininumMargin);
+  const maximumMargin = isPlayer ? -20 : 100;
+  const val = Math.min(Math.max(cardsCount * -factor, mininumMargin), maximumMargin);
   return `0px 2px -5px ${val}px`;
 };
 
@@ -68,6 +69,16 @@ const HandContainer = styled.div<HandProps>`
       const isPlayer = tablePosition === 0;
       return getCardMargin(cardsCount, isPlayer);
     }};
+
+    transition: all 0.2s ease;
+
+    :hover {
+      transform: translateZ(140px) translateY(-5px) scale(1.1);
+      margin-right: 25px;
+    }
+    :last-child:hover {
+      margin-right: 0;
+    }
   }
 `;
 
