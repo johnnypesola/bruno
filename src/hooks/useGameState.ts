@@ -4,6 +4,7 @@ import { flow } from 'lodash/fp';
 import { ServerEvent, GameStateAction } from '../types/serverEventTypes';
 import { getRandomCard } from '../utils';
 import { GameState } from '../types/commonTypes';
+import { maxNumberOfPileCards } from '../constants';
 
 const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const reducer = (state: GameState, action: GameStateAction): GameState => {
@@ -64,8 +65,14 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
     if (action.name === ServerEvent.AddCardToPile) {
       const { card } = action.value;
+      const newState = { ...state };
 
-      return set(['cardPile'], [...state.cardPile, card])(state);
+      // Limit number of visible cards in pile for better performance.
+      if (newState.cardPile.length > maxNumberOfPileCards) {
+        newState.cardPile.shift();
+      }
+
+      return set(['cardPile'], [...state.cardPile, card])(newState);
     }
 
     if (action.name === ServerEvent.OpponentDrawsCard) {

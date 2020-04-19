@@ -3,6 +3,7 @@ import { toPileCard, getRandomCard } from '../../utils';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { ServerEvent } from '../../../src/types/serverEventTypes';
+import { maxNumberOfPileCards } from '../../../src/constants';
 
 export class CardPileService extends BaseService {
   cardsInPile: CardInPile[];
@@ -16,6 +17,9 @@ export class CardPileService extends BaseService {
   async addCardToPile(card: CardInHand): Promise<void> {
     const pileCard = toPileCard(card);
     this.cardsInPile.push(pileCard);
+    if (this.cardsInPile.length > maxNumberOfPileCards) {
+      this.cardsInPile.shift();
+    }
     console.log(`Added card (${card.value} ${card.color}) to pile`);
 
     this.api.typedEmit({ name: ServerEvent.AddCardToPile, value: { card: pileCard } });

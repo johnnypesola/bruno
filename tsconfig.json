@@ -21,7 +21,7 @@
   },
   "include": [
     "src",
-    "backend/constants.ts",
+    "src/constants.ts",
     "types/commonTypes.ts"
   ]
 }
