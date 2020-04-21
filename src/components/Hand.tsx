@@ -62,6 +62,7 @@ interface HandProps {
 const HandContainer = styled.div<HandProps>`
   margin: 20px;
   ${({ tablePosition, numberOfPlayers }) => getTablePositionStyle(tablePosition, numberOfPlayers)};
+  ${({ isHighlighted }) => getHighlightedStyle(isHighlighted)}
 
   > * {
     margin: ${({ cardsCount, tablePosition }) => {
