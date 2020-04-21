@@ -62,7 +62,6 @@ interface HandProps {
 const HandContainer = styled.div<HandProps>`
   margin: 20px;
   ${({ tablePosition, numberOfPlayers }) => getTablePositionStyle(tablePosition, numberOfPlayers)};
-  ${({ isHighlighted }) => getHighlightedStyle(isHighlighted)}
 
   > * {
     margin: ${({ cardsCount, tablePosition }) => {
@@ -70,14 +69,29 @@ const HandContainer = styled.div<HandProps>`
       return getCardMargin(cardsCount, isPlayer);
     }};
 
-    transition: all 0.2s ease;
-
     :hover {
       transform: translateZ(140px) translateY(-5px) scale(1.1);
       margin-right: 25px;
     }
     :last-child:hover {
       margin-right: 0;
+    }
+
+    transition: all 0.2s ease;
+    animation-duration: 0.8s;
+    animation-name: getcard;
+    position: relative;
+  }
+
+  @keyframes getcard {
+    from {
+      bottom: 50px;
+      opacity: 0;
+    }
+
+    to {
+      bottom: 0;
+      opacity: 1;
     }
   }
 `;
