@@ -1,11 +1,12 @@
-import { Player, InitPlayerDataContent, Opponent, CardInHand } from '../../../src/types/commonTypes';
-import { ServerEvent, InitPlayerData, UpdateOpponentData } from '../../../src/types/serverEventTypes';
+import { Player, InitPlayerDataContent, Opponent } from '../../../src/types/commonTypes';
+import { ServerEvent } from '../../../src/types/serverEventTypes';
 import { getInitialHand, getRandomCard } from '../../utils';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { userId } from '../eventListeners';
 import { ServiceName } from '../../../src/types/services';
 import { CardPileService } from './CardPile';
+import { canPlayCard, playCard, triggerCardEffect } from '../cardLogic';
 
 export class PlayerService extends BaseService {
   players: Player[];
@@ -25,22 +26,11 @@ export class PlayerService extends BaseService {
     console.log('playerTurnPosition', this.playerTurnPosition);
     if (!this.isPlayersTurn(id)) return;
 
-    this.canPlayCard(cardToPlay)
+    canPlayCard(cardToPlay, this.api)
       .then(() => {
         const playedCard = player.cards.splice(cardIndex, 1)[0];
-        this.api.service<CardPileService>(ServiceName.CardPile).addCardToPile(playedCard);
-
-        this.api.typedEmit({ name: ServerEvent.PlayerPlaysCard, value: { newCards: player.cards } }, socket);
-
-        // Emit update to opponents about players cards.
-        const opponent: Opponent = {
-          ...player,
-          cards: player.cards.map(() => null),
-        };
-
-        this.api.typedBroadcastEmit({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
-
-        this.nextPlayersTurn();
+        triggerCardEffect(playedCard, player, this.api, socket);
+        this.setNextPlayersTurn();
       })
       .catch(() => {
         console.log('Player could not play card', cardToPlay);
@@ -63,7 +53,7 @@ export class PlayerService extends BaseService {
 
     this.api.typedBroadcastEmit({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
 
-    this.nextPlayersTurn();
+    this.setNextPlayersTurn();
   }
 
   async addPlayer(id: string, socket: any): Promise<string> {
@@ -100,10 +90,16 @@ export class PlayerService extends BaseService {
     return id;
   }
 
+  getNextPlayer(): Player {
+    const nextPlayerPos = this.getNextPlayerPos(this.playerTurnPosition);
+
+    return this.players.find(player => player.position === nextPlayerPos);
+  }
+
   async removePlayer(id: string): Promise<string> {
     const playerToRemove = this.players.find(player => player.id == id);
 
-    if (playerToRemove.position === this.playerTurnPosition) this.nextPlayersTurn();
+    if (playerToRemove.position === this.playerTurnPosition) this.setNextPlayersTurn();
 
     this.players = this.players.filter(player => player.id !== id);
     console.log(`Removed player for client with id: ${id}`);
@@ -125,45 +121,26 @@ export class PlayerService extends BaseService {
     return freePos;
   };
 
-  private async canPlayCard(card: CardInHand): Promise<void> {
-    const topCard = await this.api.service<CardPileService>(ServiceName.CardPile).getTopCard();
-    const canPlay = topCard.value === card.value || card.color === topCard.color;
-
-    if (canPlay) {
-      console.log('player can play card', card);
-      return Promise.resolve();
-    } else {
-      console.log('player cannot play card', card, topCard);
-      return Promise.reject();
-    }
-  }
-
   private isPlayersTurn(id: userId): boolean {
     return this.players.find(player => player.id === id).position === this.playerTurnPosition;
   }
 
-  private nextPlayersTurn(): void {
-    const getNextPlayerPos = (oldPos: number): number => {
-      let smallestPosFound: number, nextHigherPos: number;
-      for (let i = 0; i < this.players.length; i++) {
-        const pos = this.players[i].position;
+  private getNextPlayerPos = (currentPos: number): number => {
+    let smallestPosFound: number, nextHigherPos: number;
+    for (let i = 0; i < this.players.length; i++) {
+      const pos = this.players[i].position;
 
-        if (!smallestPosFound || pos < smallestPosFound) smallestPosFound = pos;
-        if (!nextHigherPos && pos > oldPos) {
-          nextHigherPos = pos;
-          break;
-        }
+      if (!smallestPosFound || pos < smallestPosFound) smallestPosFound = pos;
+      if (!nextHigherPos && pos > currentPos) {
+        nextHigherPos = pos;
+        break;
       }
-      console.log('nextHigherPos', nextHigherPos);
-      console.log('smallestPosFound', smallestPosFound);
-      return nextHigherPos || smallestPosFound;
-    };
+    }
+    return nextHigherPos || smallestPosFound;
+  };
 
-    console.log('playerTurnPosition before', this.playerTurnPosition);
-    this.playerTurnPosition = getNextPlayerPos(this.playerTurnPosition);
-    console.log('playerTurnPosition after', this.playerTurnPosition);
-
-    console.log('nextPlayerPos', this.playerTurnPosition);
+  private setNextPlayersTurn(): void {
+    this.playerTurnPosition = this.getNextPlayerPos(this.playerTurnPosition);
 
     this.api.typedEmit({ name: ServerEvent.SetPlayerTurn, value: { position: this.playerTurnPosition } });
   }
