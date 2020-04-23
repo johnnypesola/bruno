@@ -1,20 +1,22 @@
 import { Player, InitPlayerDataContent, Opponent } from '../../../src/types/commonTypes';
 import { ServerEvent } from '../../../src/types/serverEventTypes';
-import { getInitialHand, getRandomCard } from '../../utils';
+import { getInitialHand, getRandomCard, toOpponent } from '../../utils';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { userId } from '../eventListeners';
 import { ServiceName } from '../../../src/types/services';
 import { CardPileService } from './CardPile';
-import { canPlayCard, playCard, triggerCardEffect } from '../cardLogic';
+import { canPlayCard, triggerCardEffect } from '../cardLogic';
 
 export class PlayerService extends BaseService {
   players: Player[];
+  playerSockets: { [key: string]: any };
   playerTurnPosition: number;
 
   constructor(api: ApiServer) {
     super(api);
     this.players = [];
+    this.playerSockets = {};
     this.playerTurnPosition = 1;
   }
 
@@ -32,8 +34,8 @@ export class PlayerService extends BaseService {
         triggerCardEffect(playedCard, player, this.api, socket);
         this.setNextPlayersTurn();
       })
-      .catch(() => {
-        console.log('Player could not play card', cardToPlay);
+      .catch(e => {
+        console.log('Player could not play card', cardToPlay, e);
       });
   }
 
@@ -44,32 +46,26 @@ export class PlayerService extends BaseService {
     const player = this.players.find(player => player.id === id);
     player.cards.push(card);
 
-    this.api.typedEmit({ name: ServerEvent.PlayerPickedUpCard, value: { card } }, socket);
+    this.api.sendToSocket({ name: ServerEvent.PlayerPickedUpCard, value: { card } }, socket);
 
-    const opponent: Opponent = {
-      ...player,
-      cards: player.cards.map(() => null),
-    };
+    const opponent = toOpponent(player);
 
-    this.api.typedBroadcastEmit({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
+    this.api.sendToOtherSockets({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
 
     this.setNextPlayersTurn();
   }
 
   async addPlayer(id: string, socket: any): Promise<string> {
-    const newPlayer = {
+    const newPlayer: Player = {
       id,
       cards: getInitialHand(false),
       hasExitedGame: false,
       position: this.getFreeTablePosition(),
     };
-    const newPlayerAsOpponent: Opponent = { ...newPlayer, cards: newPlayer.cards.map(() => null) };
 
-    const opponents: Opponent[] = this.players
-      .filter(player => player.id !== id)
-      .map(player => {
-        return { ...player, cards: player.cards.map(() => null) };
-      });
+    this.playerSockets[id] = socket;
+
+    const opponents: Opponent[] = this.players.filter(player => player.id !== id).map(player => toOpponent(player));
 
     this.players.push(newPlayer);
     console.log(`Added player for client with id: ${id} (table position: ${newPlayer.position})`);
@@ -85,15 +81,28 @@ export class PlayerService extends BaseService {
 
     console.log('this.playerTurnPosition', this.playerTurnPosition);
 
-    this.api.typedEmit({ name: ServerEvent.InitPlayer, value: initPlayerData }, socket);
-    this.api.typedBroadcastEmit({ name: ServerEvent.AddOpponent, value: { opponent: newPlayerAsOpponent } }, socket);
+    this.api.sendToSocket({ name: ServerEvent.InitPlayer, value: initPlayerData }, socket);
+    this.api.sendToOtherSockets({ name: ServerEvent.AddOpponent, value: { opponent: toOpponent(newPlayer) } }, socket);
     return id;
   }
 
   getNextPlayer(): Player {
     const nextPlayerPos = this.getNextPlayerPos(this.playerTurnPosition);
-
     return this.players.find(player => player.position === nextPlayerPos);
+  }
+
+  getSocketForPlayer(player: Player): any {
+    return this.playerSockets[player.id];
+  }
+
+  updatePlayer(player: Player): void {
+    const index = this.players.findIndex(({ id }) => id === player.id);
+    this.players[index] = player;
+  }
+
+  setNextPlayersTurn(): void {
+    this.playerTurnPosition = this.getNextPlayerPos(this.playerTurnPosition);
+    this.api.sendToAllSockets({ name: ServerEvent.SetPlayerTurn, value: { position: this.playerTurnPosition } });
   }
 
   async removePlayer(id: string): Promise<string> {
@@ -104,7 +113,7 @@ export class PlayerService extends BaseService {
     this.players = this.players.filter(player => player.id !== id);
     console.log(`Removed player for client with id: ${id}`);
 
-    this.api.typedEmit({ name: ServerEvent.RemoveOpponent, value: { id } });
+    this.api.sendToAllSockets({ name: ServerEvent.RemoveOpponent, value: { id } });
 
     return id;
   }
@@ -138,10 +147,4 @@ export class PlayerService extends BaseService {
     }
     return nextHigherPos || smallestPosFound;
   };
-
-  private setNextPlayersTurn(): void {
-    this.playerTurnPosition = this.getNextPlayerPos(this.playerTurnPosition);
-
-    this.api.typedEmit({ name: ServerEvent.SetPlayerTurn, value: { position: this.playerTurnPosition } });
-  }
 }

@@ -4,6 +4,8 @@ import { createServer, Server } from 'http';
 import { ServiceType } from './services';
 import { ServiceName } from '../../src/types/services';
 import { ApiEvent, GameStateAction } from '../../src/types/serverEventTypes';
+import { Player } from '../../src/types/commonTypes';
+import { PlayerService } from './services/Player';
 // eslint-disable-next-line
 const cors = require('cors');
 
@@ -49,10 +51,24 @@ export class ApiServer {
     return this.io.emit(event, data);
   }
 
-  public typedEmit({ name, value }: GameStateAction, socket: any = this.io): void {
+  public sendToSocket({ name, value }: GameStateAction, socket: any): void {
     socket.emit(name, value);
   }
-  public typedBroadcastEmit({ name, value }: GameStateAction, socket: any): void {
+
+  public sendToAllSockets({ name, value }: GameStateAction): void {
+    this.io.emit(name, value);
+  }
+
+  public sendToOtherSockets({ name, value }: GameStateAction, socket: any): void {
+    socket.broadcast.emit(name, value);
+  }
+
+  public sendToPlayer({ name, value }: GameStateAction, player: Player): void {
+    this.io.to(player.id).emit(name, value);
+  }
+
+  public sendToOtherPlayers({ name, value }: GameStateAction, player: Player): void {
+    const socket = this.service<PlayerService>(ServiceName.Player).getSocketForPlayer(player);
     socket.broadcast.emit(name, value);
   }
 
