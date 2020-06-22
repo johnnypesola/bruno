@@ -1,36 +1,62 @@
 import { Player, CardValue } from '../../src/types/commonTypes';
 import { ApiServer } from './ApiServer';
 import { PlayerService } from './services/Player';
-import { ServiceName } from '../../src/types/services';
+import { Service } from '../../src/types/services';
 import { getRandomCard, toOpponent } from '../utils';
 import { ServerEvent } from '../../src/types/serverEventTypes';
+import { CardEffectService } from './services/CardEffect';
 
 type effectFnData = { player: Player; api: ApiServer; socket: any };
 type effectFn = (data: effectFnData) => void;
 
+type playerRestrictions = {
+  cardValue: CardValue;
+  canPlaySameCard: boolean;
+  mustPickUpCard: boolean;
+};
+
+export type CardEffectData = {
+  playerRestrictions: playerRestrictions;
+  effect?: effectFn;
+};
+
 export type CardEffect = {
-  [CardValue.PlusTwo]: effectFn;
-  [CardValue.Skip]: effectFn;
+  [CardValue.PlusTwo]: CardEffectData;
+  [CardValue.Skip]: CardEffectData;
 };
 
 export const cardEffects: CardEffect = {
-  [CardValue.PlusTwo]: ({ api }) => {
-    const nextPlayer = api.service<PlayerService>(ServiceName.Player).getNextPlayer();
-    const newCards = [getRandomCard(false), getRandomCard(false)];
-    nextPlayer.cards = [...nextPlayer.cards, ...newCards];
-
-    api.service<PlayerService>(ServiceName.Player).updatePlayer(nextPlayer);
-
-    newCards.forEach(card => {
-      api.sendToPlayer({ name: ServerEvent.PlayerPickedUpCard, value: { card } }, nextPlayer);
-    });
-
-    api.sendToOtherPlayers(
-      { name: ServerEvent.UpdateOpponent, value: { opponent: toOpponent(nextPlayer) } },
-      nextPlayer,
-    );
+  [CardValue.PlusTwo]: {
+    playerRestrictions: {
+      cardValue: CardValue.PlusTwo,
+      canPlaySameCard: true,
+      mustPickUpCard: true,
+    },
+    effect: ({ api }) => {
+      api.service<CardEffectService>(Service.CardEffect).addEffectToStack({
+        playerRestrictions: {
+          cardValue: CardValue.PlusTwo,
+          canPlaySameCard: true,
+          mustPickUpCard: true,
+        },
+      });
+      api.service<CardEffectService>(Service.CardEffect).addEffectToStack({
+        playerRestrictions: {
+          cardValue: CardValue.PlusTwo,
+          canPlaySameCard: false,
+          mustPickUpCard: true,
+        },
+      });
+    },
   },
-  [CardValue.Skip]: ({ api }) => {
-    api.service<PlayerService>(ServiceName.Player).setNextPlayersTurn();
+  [CardValue.Skip]: {
+    playerRestrictions: {
+      cardValue: CardValue.Skip,
+      canPlaySameCard: false,
+      mustPickUpCard: false,
+    },
+    effect: ({ api }) => {
+      api.service<PlayerService>(Service.Player).setNextPlayersTurn();
+    },
   },
 };

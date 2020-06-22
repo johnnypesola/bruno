@@ -4,9 +4,9 @@ import { getInitialHand, getRandomCard, toOpponent } from '../../utils';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { userId } from '../eventListeners';
-import { ServiceName } from '../../../src/types/services';
+import { Service } from '../../../src/types/services';
 import { CardPileService } from './CardPile';
-import { canPlayCard, triggerCardEffect } from '../cardLogic';
+import { CardEffectService } from './CardEffect';
 
 export class PlayerService extends BaseService {
   players: Player[];
@@ -24,35 +24,29 @@ export class PlayerService extends BaseService {
     const player = this.players.find(player => player.id === id);
     const cardToPlay = player.cards[cardIndex];
 
+    const { canPlayCard, playCard } = this.api.service<CardEffectService>(Service.CardEffect);
+
     console.log('is players turn', this.isPlayersTurn(id));
     console.log('playerTurnPosition', this.playerTurnPosition);
     if (!this.isPlayersTurn(id)) return;
 
-    canPlayCard(cardToPlay, this.api)
+    canPlayCard(cardToPlay)
       .then(() => {
-        const playedCard = player.cards.splice(cardIndex, 1)[0];
-        triggerCardEffect(playedCard, player, this.api, socket);
-        this.setNextPlayersTurn();
+        playCard(player, cardIndex);
       })
       .catch(e => {
         console.log('Player could not play card', cardToPlay, e);
       });
   }
 
-  async PicksUpCard(id: userId, socket: any): Promise<void> {
+  async PicksUpCard(id: userId): Promise<void> {
     if (!this.isPlayersTurn(id)) return;
 
-    const card = getRandomCard(false);
+    const { pickupCard } = this.api.service<CardEffectService>(Service.CardEffect);
+
     const player = this.players.find(player => player.id === id);
-    player.cards.push(card);
 
-    this.api.sendToSocket({ name: ServerEvent.PlayerPickedUpCard, value: { card } }, socket);
-
-    const opponent = toOpponent(player);
-
-    this.api.sendToOtherSockets({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
-
-    this.setNextPlayersTurn();
+    pickupCard(player);
   }
 
   async addPlayer(id: string, socket: any): Promise<string> {
@@ -70,7 +64,7 @@ export class PlayerService extends BaseService {
     this.players.push(newPlayer);
     console.log(`Added player for client with id: ${id} (table position: ${newPlayer.position})`);
 
-    const cardsInPile = this.api.service<CardPileService>(ServiceName.CardPile).cardsInPile;
+    const cardsInPile = this.api.service<CardPileService>(Service.CardPile).cardsInPile;
 
     const initPlayerData: InitPlayerDataContent = {
       newPlayer,
@@ -103,6 +97,16 @@ export class PlayerService extends BaseService {
   setNextPlayersTurn(): void {
     this.playerTurnPosition = this.getNextPlayerPos(this.playerTurnPosition);
     this.api.sendToAllSockets({ name: ServerEvent.SetPlayerTurn, value: { position: this.playerTurnPosition } });
+
+    const { areAnyEffectsInStack, runFirstEffect } = this.api.service<CardEffectService>(Service.CardEffect);
+
+    const player = this.players.find(player => player.position === this.playerTurnPosition);
+
+    if (areAnyEffectsInStack()) {
+      runFirstEffect(player);
+    } else {
+      console.log('No card effects found in stack');
+    }
   }
 
   async removePlayer(id: string): Promise<string> {

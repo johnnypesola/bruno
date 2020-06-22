@@ -2,7 +2,7 @@ import express from 'express';
 import socketIo, { Namespace } from 'socket.io';
 import { createServer, Server } from 'http';
 import { ServiceType } from './services';
-import { ServiceName } from '../../src/types/services';
+import { Service } from '../../src/types/services';
 import { ApiEvent, GameStateAction } from '../../src/types/serverEventTypes';
 import { Player } from '../../src/types/commonTypes';
 import { PlayerService } from './services/Player';
@@ -15,7 +15,7 @@ export class ApiServer {
   private server: Server;
   private io: SocketIO.Server;
   private port: string | number;
-  private services: { name: ServiceName; instance: ServiceType } | {};
+  private services: { name: Service; instance: ServiceType } | {};
 
   constructor() {
     this._app = express();
@@ -37,11 +37,11 @@ export class ApiServer {
     return this.io.on(event, callback);
   }
 
-  public addService(name: ServiceName, instance: ServiceType): void {
+  public addService(name: Service, instance: ServiceType): void {
     this.services[name] = instance;
   }
 
-  public service<T>(name: ServiceName): T {
+  public service<T>(name: Service): T {
     const instance = this.services[name];
     if (!instance) throw new Error(`No service instance found for: ${name}`);
     return instance;
@@ -68,7 +68,7 @@ export class ApiServer {
   }
 
   public sendToOtherPlayers({ name, value }: GameStateAction, player: Player): void {
-    const socket = this.service<PlayerService>(ServiceName.Player).getSocketForPlayer(player);
+    const socket = this.service<PlayerService>(Service.Player).getSocketForPlayer(player);
     socket.broadcast.emit(name, value);
   }
 
