@@ -1,11 +1,11 @@
 import { useEffect, useRef, useContext } from 'react';
-import io from 'socket.io-client';
+import io, { Socket } from 'socket.io-client';
 import { GameStateContext } from '..';
 import { ServerEvent } from '../types/serverEventTypes';
 import { enumAsValues } from '../utils';
 
-const useApi = (): SocketIOClient.Socket => {
-  const socket = useRef<SocketIOClient.Socket>();
+const useApi = (): Socket => {
+  const socket = useRef<Socket>();
   const { dispatch } = useContext(GameStateContext);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const useApi = (): SocketIOClient.Socket => {
     });
   }, []);
 
-  return socket.current as SocketIOClient.Socket;
+  return socket.current as Socket;
 };
 
 export default useApi;

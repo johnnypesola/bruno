@@ -1,29 +1,30 @@
 import express from 'express';
-import socketIo, { Namespace } from 'socket.io';
-import { createServer, Server } from 'http';
+import { Server } from 'socket.io';
+import { createServer, Server as HttpServer } from 'http';
 import { ServiceType } from './services';
 import { Service } from '../../src/types/services';
 import { ApiEvent, GameStateAction } from '../../src/types/serverEventTypes';
 import { Player } from '../../src/types/commonTypes';
 import { PlayerService } from './services/Player';
-// eslint-disable-next-line
-const cors = require('cors');
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 export class ApiServer {
   public static readonly PORT: number = 8080;
   private _app: express.Application;
-  private server: Server;
-  private io: SocketIO.Server;
+  private server: HttpServer;
+  private io: Server;
   private port: string | number;
   private services: { name: Service; instance: ServiceType } | {};
 
   constructor() {
     this._app = express();
     this.port = process.env.PORT || ApiServer.PORT;
-    this._app.use(cors());
-    this._app.options('*', cors());
     this.server = createServer(this._app);
-    this.io = socketIo(this.server);
+    this.io = new Server(this.server, {
+      cors: {
+        origin: '*',
+      },
+    });
 
     this.services = {};
 
@@ -32,7 +33,7 @@ export class ApiServer {
     });
   }
 
-  public on(event: ApiEvent, callback: (any) => void): socketIo.Namespace {
+  public on(event: ApiEvent, callback: (any) => void): Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap> {
     console.log('Added eventlistener for ', event);
     return this.io.on(event, callback);
   }
@@ -47,7 +48,7 @@ export class ApiServer {
     return instance;
   }
 
-  public emit(event: ApiEvent, data: any): socketIo.Namespace {
+  public emit(event: ApiEvent, data: any): boolean {
     return this.io.emit(event, data);
   }
 
