@@ -66,9 +66,6 @@ const App: React.FC = () => {
           />
         ))}
       </Hand>
-      <span style={{ position: 'fixed', top: '10px', left: '10px' }}>
-        playerTurn {state.playerTurn} | player position {state.player.position}
-      </span>
     </>
   );
 };
