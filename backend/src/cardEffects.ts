@@ -16,7 +16,6 @@ type playerRestrictions = {
 export type CardEffectData = {
   playerRestrictions: playerRestrictions;
   resolveOn: 'onPlayCard' | 'onNextPlayerTurn' | 'onPickUpCard' | 'any';
-  isConsumed?: true;
   effect?: {
     onPlayCard?: effectFn;
     onNextPlayerTurn?: effectFn;

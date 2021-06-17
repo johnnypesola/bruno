@@ -35,6 +35,7 @@ export interface CardInPile {
   rotation: number;
   offsetX: number;
   offsetY: number;
+  isEffectConsumed?: true;
 }
 
 interface BasePlayer {

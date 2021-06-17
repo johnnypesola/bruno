@@ -25,13 +25,8 @@ export class CardPileService extends BaseService {
     this.api.sendToAllSockets({ name: ServerEvent.AddCardToPile, value: { card: pileCard } });
   }
 
-  async getTopCard(): Promise<CardInHand> {
+  async getTopCard(): Promise<CardInPile> {
     const card = this.cardsInPile[this.cardsInPile.length - 1];
-    return Promise.resolve(this.asCardInHand(card));
-  }
-
-  private asCardInHand(card: CardInPile): CardInHand {
-    const { color, value } = card;
-    return { color, value, isConcealed: false };
+    return Promise.resolve(card);
   }
 }

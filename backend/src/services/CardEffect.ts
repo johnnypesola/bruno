@@ -1,9 +1,9 @@
-import { CardInHand, Player, Opponent, CardValue } from '../../../src/types/commonTypes';
+import { CardInHand, Player } from '../../../src/types/commonTypes';
 import { CardPileService } from '../services/CardPile';
 import { ApiServer } from '../ApiServer';
 import { Service } from '../../../src/types/services';
 import { ServerEvent } from '../../../src/types/serverEventTypes';
-import { cardEffects, CardEffect, CardEffectData } from '../cardEffects';
+import { cardEffects, CardEffectData } from '../cardEffects';
 import { BaseService } from './Base';
 import { PlayerService } from './Player';
 import { toOpponent, getRandomCard } from '../../utils';
@@ -83,7 +83,7 @@ export class CardEffectService extends BaseService {
     let canPlay = this.cardsToPickup == 0 && (topCard.value === card.value || card.color === topCard.color);
 
     const topCardEffect = await this.getTopCardEffect();
-    if (topCardEffect && !topCardEffect.isConsumed) {
+    if (!topCard.isEffectConsumed && topCardEffect) {
       const { mustPickUpCard, canPlaySameCard, cardValue } = topCardEffect.playerRestrictions;
       if (mustPickUpCard) canPlay = false;
       if (canPlaySameCard && cardValue === card.value) canPlay = true;
@@ -135,9 +135,9 @@ export class CardEffectService extends BaseService {
     this.runFirstEffect(player, 'onPickUpCard');
     const mustPickupCard = this.getFirstEffectFromStack()?.playerRestrictions.mustPickUpCard;
 
+    const topCard = await this.api.service<CardPileService>(Service.CardPile).getTopCard();
     const topCardEffect = await this.getTopCardEffect();
-    if (topCardEffect) topCardEffect.isConsumed = true;
-
+    if (topCardEffect) topCard.isEffectConsumed = true;
     if (!mustPickupCard) this.api.service<PlayerService>(Service.Player).setNextPlayersTurn();
   };
 }
