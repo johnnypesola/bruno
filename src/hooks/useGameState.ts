@@ -34,13 +34,9 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     if (action.name === ServerEvent.UpdateOpponent) {
       const { opponent } = action.value;
 
-      const updatedOpponents = state.opponents.map(orgOpponent => {
-        if (orgOpponent.id === opponent.id) {
-          return opponent;
-        } else {
-          return orgOpponent;
-        }
-      });
+      const updatedOpponents = state.opponents.map(orgOpponent =>
+        orgOpponent.id === opponent.id ? opponent : orgOpponent,
+      );
 
       return set(['opponents'], updatedOpponents)(state);
     }

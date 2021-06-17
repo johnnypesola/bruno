@@ -1,6 +1,6 @@
 import { Player, InitPlayerDataContent, Opponent } from '../../../src/types/commonTypes';
 import { ServerEvent } from '../../../src/types/serverEventTypes';
-import { getInitialHand, getRandomCard, toOpponent } from '../../utils';
+import { getInitialHand, toOpponent } from '../../utils';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { userId } from '../eventListeners';
@@ -103,7 +103,7 @@ export class PlayerService extends BaseService {
     const player = this.players.find(player => player.position === this.playerTurnPosition);
 
     if (areAnyEffectsInStack()) {
-      runFirstEffect(player);
+      runFirstEffect(player, 'onNextPlayerTurn');
     } else {
       console.log('No card effects found in stack');
     }
