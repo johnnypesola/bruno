@@ -1,4 +1,4 @@
-import { ServiceName } from '../../src/types/services';
+import { Service } from '../../src/types/services';
 import { ApiServer } from './ApiServer';
 import { Room } from './rooms';
 import { PlayerService } from './services/Player';
@@ -13,21 +13,21 @@ export default (api: ApiServer): void => {
     const userId: userId = socket.id;
     socket.join(Room.CardPile);
     console.log(`user ${userId} connected`);
-    api.service<PlayerService>(ServiceName.Player).addPlayer(userId, socket);
+    api.service<PlayerService>(Service.Player).addPlayer(userId, socket);
 
     socket.on(SystemEvent.ConnectionClosed, () => {
       console.log(`user ${userId} disconnected`);
-      api.service<PlayerService>(ServiceName.Player).removePlayer(userId);
+      api.service<PlayerService>(Service.Player).removePlayer(userId);
     });
 
     socket.on(ClientEvent.PlaysCard, (cardIndex: number) => {
       console.log(`Player ${userId} played card with index`, cardIndex);
-      api.service<PlayerService>(ServiceName.Player).playCard(userId, cardIndex, socket);
+      api.service<PlayerService>(Service.Player).playCard(userId, cardIndex, socket);
     });
 
     socket.on(ClientEvent.PicksUpCard, () => {
       console.log(`Player ${userId} picked up card`);
-      api.service<PlayerService>(ServiceName.Player).PicksUpCard(userId, socket);
+      api.service<PlayerService>(Service.Player).PicksUpCard(userId);
     });
   });
 };

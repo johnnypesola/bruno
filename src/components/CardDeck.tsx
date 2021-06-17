@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import styled from 'styled-components';
+import { GameStateContext } from '..';
 
 const PileContainer = styled.div`
   margin: 2px;
@@ -76,9 +77,12 @@ interface ComponentProps {
 }
 
 const CardDeck: React.FC<ComponentProps> = ({ onClick }) => {
+  const { state } = useContext(GameStateContext);
   const [isDrawCardVisible, setIsDrawCardVisible] = useState(false);
 
   const handleOnClick = (): void => {
+    console.log(state.playerTurn, state.player.position);
+    if (state.playerTurn !== state.player.position) return;
     onClick();
     setIsDrawCardVisible(true);
     setTimeout(() => {

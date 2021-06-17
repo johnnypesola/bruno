@@ -22,7 +22,7 @@ export class CardPileService extends BaseService {
     }
     console.log(`Added card (${card.value} ${card.color}) to pile`);
 
-    this.api.typedEmit({ name: ServerEvent.AddCardToPile, value: { card: pileCard } });
+    this.api.sendToAllSockets({ name: ServerEvent.AddCardToPile, value: { card: pileCard } });
   }
 
   async getTopCard(): Promise<CardInHand> {

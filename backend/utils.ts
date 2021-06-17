@@ -1,4 +1,4 @@
-import { CardInHand, CardColor, CardValue, CardInPile } from '../src/types/commonTypes';
+import { CardInHand, CardColor, CardValue, CardInPile, Player, Opponent } from '../src/types/commonTypes';
 import { initialNumberOfCardsInHand } from '../src/constants';
 
 export const getUserIdsInChannel = (app, channel: string): string[] => {
@@ -38,5 +38,12 @@ export const toPileCard = (card: CardInHand): CardInPile => {
     rotation: randomRotation,
     offsetX: randomOffsetX,
     offsetY: randomOffsetY,
+  };
+};
+
+export const toOpponent = (player: Player): Opponent => {
+  return {
+    ...player,
+    cards: player.cards.map(() => null),
   };
 };

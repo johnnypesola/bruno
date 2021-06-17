@@ -9,7 +9,9 @@ const useApi = (): SocketIOClient.Socket => {
   const { dispatch } = useContext(GameStateContext);
 
   useEffect(() => {
-    socket.current = io('http://localhost:8080');
+    const params = new URLSearchParams(window.location.search);
+    const server = params.get('server') || 'http://localhost:8080';
+    socket.current = io(server);
 
     // Receive real-time events through Socket.io
     // and dispatch them directly into game state reducer.
