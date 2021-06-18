@@ -12,6 +12,7 @@ export class PlayerService extends BaseService {
   players: Player[];
   playerSockets: { [key: string]: any };
   playerTurnPosition: number;
+  winningPlayer?: Player;
 
   constructor(api: ApiServer) {
     super(api);
@@ -21,6 +22,7 @@ export class PlayerService extends BaseService {
   }
 
   async playCard(id: userId, cardIndex: number, socket: any): Promise<void> {
+    if (this.hasSomePlayerWon()) return;
     const player = this.players.find(player => player.id === id);
     const cardToPlay = player.cards[cardIndex];
 
@@ -33,14 +35,15 @@ export class PlayerService extends BaseService {
     canPlayCard(cardToPlay)
       .then(() => {
         playCard(player, cardIndex);
+        this.handleLastCardPlayed(player);
       })
       .catch(e => {
         console.log('Player could not play card', cardToPlay, e);
       });
   }
 
-  async PicksUpCard(id: userId): Promise<void> {
-    if (!this.isPlayersTurn(id)) return;
+  async picksUpCard(id: userId): Promise<void> {
+    if (this.hasSomePlayerWon() || !this.isPlayersTurn(id)) return;
 
     const { pickupCard } = this.api.service<CardEffectService>(Service.CardEffect);
 
@@ -151,4 +154,28 @@ export class PlayerService extends BaseService {
     }
     return nextHigherPos || smallestPosFound;
   };
+
+  private hasSomePlayerWon(): boolean {
+    return !!this.winningPlayer;
+  }
+
+  private async handleLastCardPlayed(player: Player): Promise<void> {
+    const hasCardsLeft = player.cards.length > 0;
+    if (hasCardsLeft) return;
+
+    const topCardEffect = await this.api.service<CardEffectService>(Service.CardEffect).getTopCardEffect();
+    if (topCardEffect) {
+      console.log('Player played effect card as last card. Player picks up at least two cards');
+      this.api.service<CardEffectService>(Service.CardEffect).cardsToPickup += 2;
+      const { pickupCard } = this.api.service<CardEffectService>(Service.CardEffect);
+      pickupCard(player);
+    }
+    if (!topCardEffect) {
+      console.log('Player wins');
+      this.winningPlayer = player;
+      const socket = this.getSocketForPlayer(player);
+      this.api.sendToSocket({ name: ServerEvent.PlayerWins, value: {} }, socket);
+      this.api.sendToOtherSockets({ name: ServerEvent.OpponentWins, value: { opponent: toOpponent(player) } }, socket);
+    }
+  }
 }

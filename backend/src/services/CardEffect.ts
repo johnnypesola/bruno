@@ -1,4 +1,4 @@
-import { CardInHand, Player } from '../../../src/types/commonTypes';
+import { CardInHand, CardInPile, Player } from '../../../src/types/commonTypes';
 import { CardPileService } from '../services/CardPile';
 import { ApiServer } from '../ApiServer';
 import { Service } from '../../../src/types/services';
@@ -18,7 +18,7 @@ export class CardEffectService extends BaseService {
     this.cardsToPickup = 0;
   }
 
-  doesCardHaveAnEffect = (card: CardInHand): boolean => {
+  doesCardHaveAnEffect = (card: CardInHand | CardInPile): boolean => {
     return Object.keys(cardEffects).some(val => val == card.value);
   };
 

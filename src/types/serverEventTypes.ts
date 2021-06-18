@@ -12,20 +12,18 @@ export enum ServerEvent {
   InitPlayer = 'InitPlayer',
   PlayerPlaysCard = 'PlayerPlaysCard',
   PlayerPickedUpCard = 'PlayerPickedUpCard',
+  PlayerWins = 'PlayerWins',
 
   // Opponent
   AddOpponent = 'AddOpponent',
-  AddOpponents = 'AddOpponents',
-  OpponentPlaysCard = 'OpponentPlaysCard',
-  OpponentDrawsCard = 'OpponentDrawsCard',
   RemoveOpponent = 'RemoveOpponent',
   UpdateOpponent = 'UpdateOpponent',
+  OpponentWins = 'OpponentWins',
 
   // Turn
   SetPlayerTurn = 'SetPlayerTurn',
 
   // CardPile
-  UpdateCardPile = 'UpdateCardPile',
   AddCardToPile = 'AddCardToPile',
 }
 
@@ -36,10 +34,6 @@ export interface InitPlayerData {
 export interface AddOpponentData {
   name: ServerEvent.AddOpponent;
   value: { opponent: Opponent };
-}
-export interface AddOpponentsData {
-  name: ServerEvent.AddOpponents;
-  value: { opponents: Opponent[] };
 }
 export interface UpdateOpponentData {
   name: ServerEvent.UpdateOpponent;
@@ -56,13 +50,9 @@ export interface PlayerPlaysCardData {
   value: { newCards: CardInHand[] };
 }
 
-export interface OpponentPlaysCardData {
-  name: ServerEvent.OpponentPlaysCard;
-  value: { opponentIndex: number; cardIndex: number };
-}
-export interface OpponentDrawsCardData {
-  name: ServerEvent.OpponentDrawsCard;
-  value: { opponentIndex: number };
+export interface OpponentWinsData {
+  name: ServerEvent.OpponentWins;
+  value: { opponent: Opponent };
 }
 
 export interface PlayerPicksUpCardData {
@@ -70,15 +60,16 @@ export interface PlayerPicksUpCardData {
   value: { card: CardInHand };
 }
 
+export interface PlayerWinsData {
+  name: ServerEvent.PlayerWins;
+  value: {};
+}
+
 export interface SetPlayerTurnData {
   name: ServerEvent.SetPlayerTurn;
   value: { position: number };
 }
 
-export interface UpdateCardPileData {
-  name: ServerEvent.UpdateCardPile;
-  value: { cards: CardInPile[] };
-}
 export interface AddCardToPileData {
   name: ServerEvent.AddCardToPile;
   value: { card: CardInPile };
@@ -87,13 +78,11 @@ export interface AddCardToPileData {
 export type GameStateAction =
   | InitPlayerData
   | AddOpponentData
-  | AddOpponentsData
   | UpdateOpponentData
   | RemoveOpponentData
   | PlayerPlaysCardData
-  | OpponentPlaysCardData
-  | OpponentDrawsCardData
+  | OpponentWinsData
   | PlayerPicksUpCardData
+  | PlayerWinsData
   | SetPlayerTurnData
-  | UpdateCardPileData
   | AddCardToPileData;

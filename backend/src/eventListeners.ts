@@ -27,7 +27,7 @@ export default (api: ApiServer): void => {
 
     socket.on(ClientEvent.PicksUpCard, () => {
       console.log(`Player ${userId} picked up card`);
-      api.service<PlayerService>(Service.Player).PicksUpCard(userId);
+      api.service<PlayerService>(Service.Player).picksUpCard(userId);
     });
   });
 };
