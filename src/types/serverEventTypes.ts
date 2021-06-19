@@ -25,6 +25,9 @@ export enum ServerEvent {
 
   // CardPile
   AddCardToPile = 'AddCardToPile',
+
+  // Game
+  GameRestarsInSeconds = 'GameRestarsInSeconds',
 }
 
 export interface InitPlayerData {
@@ -75,6 +78,11 @@ export interface AddCardToPileData {
   value: { card: CardInPile };
 }
 
+export interface GameRestarsInSeconds {
+  name: ServerEvent.GameRestarsInSeconds;
+  value: { seconds: number };
+}
+
 export type GameStateAction =
   | InitPlayerData
   | AddOpponentData
@@ -85,4 +93,5 @@ export type GameStateAction =
   | PlayerPicksUpCardData
   | PlayerWinsData
   | SetPlayerTurnData
+  | GameRestarsInSeconds
   | AddCardToPileData;

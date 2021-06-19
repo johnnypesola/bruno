@@ -82,6 +82,9 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       alert(`Darnit! Your opponnent just won. What a bummer!`);
     }
 
+    if (action.name === ServerEvent.GameRestarsInSeconds) {
+    }
+
     // Default fallback
     return state;
   };

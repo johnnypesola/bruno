@@ -7,12 +7,12 @@ import { userId } from '../eventListeners';
 import { Service } from '../../../src/types/services';
 import { CardPileService } from './CardPile';
 import { CardEffectService } from './CardEffect';
+import { GameService } from './Game';
 
 export class PlayerService extends BaseService {
   players: Player[];
   playerSockets: { [key: string]: any };
   playerTurnPosition: number;
-  winningPlayer?: Player;
 
   constructor(api: ApiServer) {
     super(api);
@@ -22,7 +22,9 @@ export class PlayerService extends BaseService {
   }
 
   async playCard(id: userId, cardIndex: number, socket: any): Promise<void> {
-    if (this.hasSomePlayerWon()) return;
+    const { isGameOver } = this.api.service<GameService>(Service.GameService);
+    if (isGameOver) return;
+
     const player = this.players.find(player => player.id === id);
     const cardToPlay = player.cards[cardIndex];
 
@@ -43,7 +45,8 @@ export class PlayerService extends BaseService {
   }
 
   async picksUpCard(id: userId): Promise<void> {
-    if (this.hasSomePlayerWon() || !this.isPlayersTurn(id)) return;
+    const { isGameOver } = this.api.service<GameService>(Service.GameService);
+    if (isGameOver || !this.isPlayersTurn(id)) return;
 
     const { pickupCard } = this.api.service<CardEffectService>(Service.CardEffect);
 
@@ -82,6 +85,16 @@ export class PlayerService extends BaseService {
     this.api.sendToOtherSockets({ name: ServerEvent.AddOpponent, value: { opponent: toOpponent(newPlayer) } }, socket);
     return id;
   }
+
+  // resetAllPlayersHands = () => {
+
+  // }
+
+  // resetPlayerHand = (player: Player) => {
+  //   player.cards = getInitialHand(false),
+  //   this.api.sendToSocket({ name: ServerEvent., value: initPlayerData }, socket);
+  //   this.api.sendToOtherSockets({ name: ServerEvent.AddOpponent, value: { opponent: toOpponent(newPlayer) } }, socket);
+  // }
 
   getNextPlayer(): Player {
     const nextPlayerPos = this.getNextPlayerPos(this.playerTurnPosition);
@@ -155,10 +168,6 @@ export class PlayerService extends BaseService {
     return nextHigherPos || smallestPosFound;
   };
 
-  private hasSomePlayerWon(): boolean {
-    return !!this.winningPlayer;
-  }
-
   private async handleLastCardPlayed(player: Player): Promise<void> {
     const hasCardsLeft = player.cards.length > 0;
     if (hasCardsLeft) return;
@@ -172,7 +181,10 @@ export class PlayerService extends BaseService {
     }
     if (!topCardEffect) {
       console.log('Player wins');
-      this.winningPlayer = player;
+
+      const { endGameWithWinningPlayer } = this.api.service<GameService>(Service.GameService);
+      endGameWithWinningPlayer(player);
+
       const socket = this.getSocketForPlayer(player);
       this.api.sendToSocket({ name: ServerEvent.PlayerWins, value: {} }, socket);
       this.api.sendToOtherSockets({ name: ServerEvent.OpponentWins, value: { opponent: toOpponent(player) } }, socket);
