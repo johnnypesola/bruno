@@ -21,8 +21,8 @@ export class PlayerService extends BaseService {
     this.playerTurnPosition = 1;
   }
 
-  async playCard(id: userId, cardIndex: number, socket: any): Promise<void> {
-    const { isGameOver } = this.api.service<GameService>(Service.GameService);
+  playCard(id: userId, cardIndex: number): void {
+    const { isGameOver } = this.api.service<GameService>(Service.Game);
     if (isGameOver) return;
 
     const player = this.players.find(player => player.id === id);
@@ -44,8 +44,8 @@ export class PlayerService extends BaseService {
       });
   }
 
-  async picksUpCard(id: userId): Promise<void> {
-    const { isGameOver } = this.api.service<GameService>(Service.GameService);
+  picksUpCard(id: userId): void {
+    const { isGameOver } = this.api.service<GameService>(Service.Game);
     if (isGameOver || !this.isPlayersTurn(id)) return;
 
     const { pickupCard } = this.api.service<CardEffectService>(Service.CardEffect);
@@ -55,25 +55,36 @@ export class PlayerService extends BaseService {
     pickupCard(player);
   }
 
-  async addPlayer(id: string, socket: any): Promise<string> {
+  addPlayer(id: string, socket: any): string {
     const newPlayer: Player = {
       id,
       cards: getInitialHand(false),
       hasExitedGame: false,
       position: this.getFreeTablePosition(),
+      isInitialized: false,
     };
 
     this.playerSockets[id] = socket;
 
-    const opponents: Opponent[] = this.players.filter(player => player.id !== id).map(player => toOpponent(player));
-
     this.players.push(newPlayer);
     console.log(`Added player for client with id: ${id} (table position: ${newPlayer.position})`);
 
+    this.initPlayer(newPlayer);
+    return id;
+  }
+
+  resetPlayers = (): void =>
+    this.players.forEach(player => {
+      player.cards = getInitialHand(false);
+      this.initPlayer(player);
+    });
+
+  private initPlayer = (player: Player): void => {
+    const opponents: Opponent[] = this.players.filter(({ id }) => player.id !== id).map(player => toOpponent(player));
     const cardsInPile = this.api.service<CardPileService>(Service.CardPile).cardsInPile;
 
     const initPlayerData: InitPlayerDataContent = {
-      newPlayer,
+      newPlayer: player,
       opponents,
       playerTurnPosition: this.playerTurnPosition,
       cardsInPile,
@@ -81,20 +92,18 @@ export class PlayerService extends BaseService {
 
     console.log('this.playerTurnPosition', this.playerTurnPosition);
 
+    const socket = this.getSocketForPlayer(player);
+
     this.api.sendToSocket({ name: ServerEvent.InitPlayer, value: initPlayerData }, socket);
-    this.api.sendToOtherSockets({ name: ServerEvent.AddOpponent, value: { opponent: toOpponent(newPlayer) } }, socket);
-    return id;
-  }
-
-  // resetAllPlayersHands = () => {
-
-  // }
-
-  // resetPlayerHand = (player: Player) => {
-  //   player.cards = getInitialHand(false),
-  //   this.api.sendToSocket({ name: ServerEvent., value: initPlayerData }, socket);
-  //   this.api.sendToOtherSockets({ name: ServerEvent.AddOpponent, value: { opponent: toOpponent(newPlayer) } }, socket);
-  // }
+    this.api.sendToOtherSockets(
+      {
+        name: player.isInitialized ? ServerEvent.UpdateOpponent : ServerEvent.AddOpponent,
+        value: { opponent: toOpponent(player) },
+      },
+      socket,
+    );
+    player.isInitialized = true;
+  };
 
   getNextPlayer(): Player {
     const nextPlayerPos = this.getNextPlayerPos(this.playerTurnPosition);
@@ -125,7 +134,7 @@ export class PlayerService extends BaseService {
     }
   }
 
-  async removePlayer(id: string): Promise<string> {
+  removePlayer(id: string): string {
     const playerToRemove = this.players.find(player => player.id == id);
 
     if (playerToRemove.position === this.playerTurnPosition) this.setNextPlayersTurn();
@@ -182,7 +191,7 @@ export class PlayerService extends BaseService {
     if (!topCardEffect) {
       console.log('Player wins');
 
-      const { endGameWithWinningPlayer } = this.api.service<GameService>(Service.GameService);
+      const { endGameWithWinningPlayer } = this.api.service<GameService>(Service.Game);
       endGameWithWinningPlayer(player);
 
       const socket = this.getSocketForPlayer(player);

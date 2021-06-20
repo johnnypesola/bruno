@@ -51,6 +51,7 @@ export interface Opponent extends BasePlayer {
 export interface Player extends BasePlayer {
   cards: CardInHand[];
   position: number;
+  isInitialized: boolean;
 }
 
 export interface InitPlayerDataContent {
@@ -66,4 +67,6 @@ export interface GameState {
   cardPile: CardInPile[];
   playerTurn: number;
   isReversePlayDirection: boolean;
+  toasterMessage?: string;
+  dialogMessage?: string;
 }

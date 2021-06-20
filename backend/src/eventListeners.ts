@@ -22,7 +22,7 @@ export default (api: ApiServer): void => {
 
     socket.on(ClientEvent.PlaysCard, (cardIndex: number) => {
       console.log(`Player ${userId} played card with index`, cardIndex);
-      api.service<PlayerService>(Service.Player).playCard(userId, cardIndex, socket);
+      api.service<PlayerService>(Service.Player).playCard(userId, cardIndex);
     });
 
     socket.on(ClientEvent.PicksUpCard, () => {

@@ -9,7 +9,7 @@ export type ServiceType = CardPileService | PlayerService | CardEffectService | 
 
 export default (api: ApiServer): void => {
   // Register our services
-  api.addService(Service.GameService, new GameService(api));
+  api.addService(Service.Game, new GameService(api));
   api.addService(Service.CardPile, new CardPileService(api));
   api.addService(Service.Player, new PlayerService(api));
   api.addService(Service.CardEffect, new CardEffectService(api));

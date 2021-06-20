@@ -97,13 +97,10 @@ const HandContainer = styled.div<HandProps>`
   }
 `;
 
-const Hand: React.FC<Omit<HandProps, 'numberOfPlayers'>> = ({ children, ...props }) => {
-  const { state } = useContext(GameStateContext);
-  return (
-    <HandContainer numberOfPlayers={state.opponents.length + 1} {...props}>
-      {children}
-    </HandContainer>
-  );
-};
+const Hand: React.FC<HandProps> = ({ children, numberOfPlayers, ...props }) => (
+  <HandContainer numberOfPlayers={numberOfPlayers} {...props}>
+    {children}
+  </HandContainer>
+);
 
 export default Hand;

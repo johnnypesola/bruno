@@ -83,6 +83,8 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
 
     if (action.name === ServerEvent.GameRestarsInSeconds) {
+      const message = `Game restarts in ${action.value.seconds} seconds`;
+      return set(['toasterMessage'], message)(state);
     }
 
     // Default fallback
@@ -90,7 +92,7 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   };
 
   const initialGameState: GameState = {
-    player: { id: 'Player', cards: [], hasExitedGame: false, position: 0 },
+    player: { id: 'Player', cards: [], hasExitedGame: false, position: 0, isInitialized: false },
     opponents: [],
     cardPile: [],
     playerTurn: -1,

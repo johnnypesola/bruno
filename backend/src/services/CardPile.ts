@@ -10,9 +10,13 @@ export class CardPileService extends BaseService {
 
   constructor(api: ApiServer) {
     super(api);
-    this.cardsInPile = [toPileCard(getRandomCard())];
+    this.resetCardPile();
     console.log('Initiated cardpile with ', this.cardsInPile);
   }
+
+  resetCardPile = (): void => {
+    this.cardsInPile = [toPileCard(getRandomCard())];
+  };
 
   async addCardToPile(card: CardInHand): Promise<void> {
     const pileCard = toPileCard(card);

@@ -8,6 +8,7 @@ import Hand from './components/Hand';
 import CardPile from './components/CardPile';
 import useApi from './hooks/useApi';
 import { ClientEvent } from './types/clientEventTypes';
+import Toaster from './components/Toaster';
 
 const App: React.FC = () => {
   const { state } = useContext(GameStateContext);
@@ -39,6 +40,7 @@ const App: React.FC = () => {
           isHighlighted={state.playerTurn === opponent.position}
           tablePosition={opponent.position}
           cardsCount={opponent.cards.length}
+          numberOfPlayers={state.opponents.length + 1}
         >
           {opponent.cards.map((card, index) => (
             <Card key={index} color={CardColor.Blue} value={CardValue.Eight} isConcealed={true} />
@@ -55,6 +57,7 @@ const App: React.FC = () => {
         isHighlighted={state.playerTurn === state.player.position}
         tablePosition={0}
         cardsCount={state.player.cards.length}
+        numberOfPlayers={state.opponents.length + 1}
       >
         {state.player.cards.map((card, index) => (
           <Card
@@ -66,6 +69,7 @@ const App: React.FC = () => {
           />
         ))}
       </Hand>
+      <Toaster message={state.toasterMessage} />
     </>
   );
 };
