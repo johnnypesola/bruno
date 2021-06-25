@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { Player, CardValue } from '../../src/types/commonTypes';
+import { Player, CardValue, CardInHand } from '../../frontend/src/types/commonTypes';
 import { ApiServer } from './ApiServer';
 
 type effectFnData = { player: Player; api: ApiServer; socket: Socket };
@@ -51,3 +51,5 @@ export const cardEffects: CardEffect = {
     },
   },
 };
+
+export type CardWithEffect = Omit<CardInHand, "value"> & { value: keyof CardEffect };

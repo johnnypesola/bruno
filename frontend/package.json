@@ -55,7 +55,7 @@
     "gh-pages": "^2.2.0",
     "husky": "^4.2.3",
     "nan": "^2.14.0",
-    "prettier": "^2.3.1"
+    "prettier": "2.3.1"
   },
   "husky": {
     "hooks": {

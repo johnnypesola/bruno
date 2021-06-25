@@ -1,7 +1,7 @@
-import { CardInHand, CardInHandWithIndex, Player } from '../../../src/types/commonTypes';
+import { CardInHand, CardInHandWithIndex, CardInPile, CardValue, Player } from '../../../frontend/src/types/commonTypes';
 import { ApiServer } from '../ApiServer';
-import { ServerEvent } from '../../../src/types/serverEventTypes';
-import { cardEffects, CardEffectData } from '../cardEffects';
+import { ServerEvent } from '../../../frontend/src/types/serverEventTypes';
+import { cardEffects, CardEffectData, CardEffect, CardWithEffect } from '../cardEffects';
 import { BaseService } from './Base';
 import { toOpponent, getRandomCard } from '../../utils';
 import { pull, pullAt } from 'lodash';
@@ -16,7 +16,7 @@ export class CardEffectService extends BaseService {
     this.cardsToPickup = 0;
   }
 
-  doesCardHaveAnEffect = (card: CardInHand): boolean => {
+  doesCardHaveAnEffect = (card: CardInHand | CardInPile): card is CardWithEffect => {
     return Object.keys(cardEffects).some((val) => val == card.value);
   };
 
@@ -31,7 +31,7 @@ export class CardEffectService extends BaseService {
 
   getTopCardEffect = async (): Promise<CardEffectData | void> => {
     const topCard = await this.api.services.CardPile.getTopCard();
-    return cardEffects[topCard.value];
+    return this.doesCardHaveAnEffect(topCard) ? cardEffects[topCard.value] : undefined;
   };
 
   areAnyEffectsInStack = (): boolean => {

@@ -1,9 +1,9 @@
 import express from 'express';
 import { Server, Socket } from 'socket.io';
 import { createServer, Server as HttpServer } from 'http';
-import { ServicesReadonlyMap } from '../../src/types/services';
-import { ApiEvent, GameStateAction } from '../../src/types/serverEventTypes';
-import { Player } from '../../src/types/commonTypes';
+import { ServicesReadonlyMap } from '../../frontend/src/types/services';
+import { ApiEvent, GameStateAction } from '../../frontend/src/types/serverEventTypes';
+import { Player } from '../../frontend/src/types/commonTypes';
 import { PlayerService } from './services/Player';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { GameService } from './services/Game';
@@ -40,7 +40,10 @@ export class ApiServer {
     });
   }
 
-  public on(event: ApiEvent, callback: (any) => void): Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap> {
+  public on(
+    event: ApiEvent,
+    callback: (any: Socket) => void,
+  ): Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap> {
     console.log('Added eventlistener for ', event);
     return this.io.on(event, callback);
   }

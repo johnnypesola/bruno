@@ -1,13 +1,14 @@
 import { ApiServer } from './ApiServer';
 import { Room } from './rooms';
-import { SystemEvent } from '../../src/types/serverEventTypes';
-import { ClientEvent } from '../../src/types/clientEventTypes';
+import { SystemEvent } from '../../frontend/src/types/serverEventTypes';
+import { ClientEvent } from '../../frontend/src/types/clientEventTypes';
+import { Socket } from 'socket.io';
 
 export type userId = string;
 
 export default (api: ApiServer): void => {
   // Add any new real-time connection to the `everybody` channel
-  api.on(SystemEvent.NewConnection, (socket) => {
+  api.on(SystemEvent.NewConnection, (socket: Socket) => {
     const userId: userId = socket.id;
     socket.join(Room.CardPile);
     console.log(`user ${userId} connected`);

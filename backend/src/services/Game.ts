@@ -1,5 +1,5 @@
-import { Player } from '../../../src/types/commonTypes';
-import { ServerEvent } from '../../../src/types/serverEventTypes';
+import { Player } from '../../../frontend/src/types/commonTypes';
+import { ServerEvent } from '../../../frontend/src/types/serverEventTypes';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 

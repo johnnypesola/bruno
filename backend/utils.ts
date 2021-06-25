@@ -1,5 +1,5 @@
-import { CardInHand, CardColor, CardValue, CardInPile, Player, Opponent } from '../src/types/commonTypes';
-import { initialNumberOfCardsInHand } from '../src/constants';
+import { CardInHand, CardColor, CardValue, CardInPile, Player, Opponent } from '../frontend/src/types/commonTypes';
+import { initialNumberOfCardsInHand } from '../frontend/src/constants';
 
 // export const getUserIdsInChannel = (app, channel: string): string[] => {
 //   return app.channel(channel).connections.map((conn) => conn.headers.cookie);

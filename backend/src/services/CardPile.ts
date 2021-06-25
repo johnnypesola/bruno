@@ -1,9 +1,9 @@
-import { CardInPile, CardInHand } from '../../../src/types/commonTypes';
+import { CardInPile, CardInHand } from '../../../frontend/src/types/commonTypes';
 import { toPileCard, getRandomCard } from '../../utils';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
-import { ServerEvent } from '../../../src/types/serverEventTypes';
-import { maxNumberOfPileCards } from '../../../src/constants';
+import { ServerEvent } from '../../../frontend/src/types/serverEventTypes';
+import { maxNumberOfPileCards } from '../../../frontend/src/constants';
 
 export class CardPileService extends BaseService {
   cardsInPile: CardInPile[];
