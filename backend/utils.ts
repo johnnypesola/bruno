@@ -1,12 +1,12 @@
 import { CardInHand, CardColor, CardValue, CardInPile, Player, Opponent } from '../src/types/commonTypes';
 import { initialNumberOfCardsInHand } from '../src/constants';
 
-export const getUserIdsInChannel = (app, channel: string): string[] => {
-  return app.channel(channel).connections.map(conn => conn.headers.cookie);
-};
+// export const getUserIdsInChannel = (app, channel: string): string[] => {
+//   return app.channel(channel).connections.map((conn) => conn.headers.cookie);
+// };
 
 export function randomEnum<T>(anEnum: T): T[keyof T] {
-  const enumValues = (Object.values(anEnum) as unknown) as T[keyof T][];
+  const enumValues = Object.values(anEnum) as unknown as T[keyof T][];
   const randomIndex = Math.floor(Math.random() * enumValues.length);
   return enumValues[randomIndex];
 }
@@ -16,6 +16,7 @@ export const getRandomCard = (isConcealed = true): CardInHand => {
     color: randomEnum(CardColor),
     value: randomEnum(CardValue),
     isConcealed: isConcealed,
+    isSelected: false,
   };
 };
 
@@ -44,6 +45,8 @@ export const toPileCard = (card: CardInHand): CardInPile => {
 export const toOpponent = (player: Player): Opponent => {
   return {
     ...player,
-    cards: player.cards.map(() => null),
+    cards: player.cards.map(({ isSelected }) => ({
+      isSelected,
+    })),
   };
 };

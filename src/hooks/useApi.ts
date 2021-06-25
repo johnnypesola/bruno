@@ -15,7 +15,7 @@ const useApi = (): Socket => {
 
     // Receive real-time events through Socket.io
     // and dispatch them directly into game state reducer.
-    enumAsValues(ServerEvent).forEach(event => {
+    enumAsValues(ServerEvent).forEach((event) => {
       socket.current?.on(event, (value: any) => {
         dispatch({
           name: event,

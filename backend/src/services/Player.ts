@@ -4,14 +4,11 @@ import { getInitialHand, toOpponent } from '../../utils';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { userId } from '../eventListeners';
-import { Service } from '../../../src/types/services';
-import { CardPileService } from './CardPile';
-import { CardEffectService } from './CardEffect';
-import { GameService } from './Game';
+import { Socket } from 'socket.io';
 
 export class PlayerService extends BaseService {
   players: Player[];
-  playerSockets: { [key: string]: any };
+  playerSockets: { [key: string]: Socket };
   playerTurnPosition: number;
 
   constructor(api: ApiServer) {
@@ -21,41 +18,72 @@ export class PlayerService extends BaseService {
     this.playerTurnPosition = 1;
   }
 
-  playCard(id: userId, cardIndex: number): void {
-    const { isGameOver } = this.api.service<GameService>(Service.Game);
-    if (isGameOver) return;
+  selectCard(id: userId, cardIndex: number, isSelected: boolean): void {
+    const { isGameOver } = this.api.services.Game;
+    if (isGameOver || !this.isPlayersTurn(id)) return;
 
-    const player = this.players.find(player => player.id === id);
+    const player = this.players.find((player) => player.id === id);
+    if (!player) return;
+
+    const cardToSelect = player.cards[cardIndex];
+
+    const { canSelectCard, selectCard } = this.api.services.CardEffect;
+
+    canSelectCard(player, cardIndex, isSelected)
+      .then(() => {
+        console.log('Player selects card', cardToSelect);
+        selectCard(player, cardIndex, isSelected);
+      })
+      .catch((e) => {
+        console.log('Player could not select card', cardToSelect, e);
+      });
+  }
+
+  playSelectedCards(id: userId): void {
+    const { isGameOver } = this.api.services.Game;
+    const { canPlaySelectedCards, playSelectedCards } = this.api.services.CardEffect;
+    if (isGameOver || !this.isPlayersTurn(id) || !canPlaySelectedCards) return;
+
+    const player = this.players.find((player) => player.id === id);
+    if (!player) return;
+
+    playSelectedCards(player);
+    this.handleLastCardPlayed(player);
+  }
+
+  playCard(id: userId, cardIndex: number): void {
+    const { isGameOver } = this.api.services.Game;
+    if (isGameOver || !this.isPlayersTurn(id)) return;
+
+    const player = this.players.find((player) => player.id === id);
+    if (!player) return;
     const cardToPlay = player.cards[cardIndex];
 
-    const { canPlayCard, playCard } = this.api.service<CardEffectService>(Service.CardEffect);
-
-    console.log('is players turn', this.isPlayersTurn(id));
-    console.log('playerTurnPosition', this.playerTurnPosition);
-    if (!this.isPlayersTurn(id)) return;
+    const { canPlayCard, playCards } = this.api.services.CardEffect;
 
     canPlayCard(cardToPlay)
       .then(() => {
-        playCard(player, cardIndex);
+        playCards(player, [cardIndex]);
         this.handleLastCardPlayed(player);
       })
-      .catch(e => {
+      .catch((e) => {
         console.log('Player could not play card', cardToPlay, e);
       });
   }
 
   picksUpCard(id: userId): void {
-    const { isGameOver } = this.api.service<GameService>(Service.Game);
+    const { isGameOver } = this.api.services.Game;
     if (isGameOver || !this.isPlayersTurn(id)) return;
 
-    const { pickupCard } = this.api.service<CardEffectService>(Service.CardEffect);
+    const { pickupCard } = this.api.services.CardEffect;
 
-    const player = this.players.find(player => player.id === id);
+    const player = this.players.find((player) => player.id === id);
+    if (!player) return;
 
     pickupCard(player);
   }
 
-  addPlayer(id: string, socket: any): string {
+  addPlayer(id: string, socket: Socket): string {
     const newPlayer: Player = {
       id,
       cards: getInitialHand(false),
@@ -74,14 +102,14 @@ export class PlayerService extends BaseService {
   }
 
   resetPlayers = (): void =>
-    this.players.forEach(player => {
+    this.players.forEach((player) => {
       player.cards = getInitialHand(false);
       this.initPlayer(player);
     });
 
   private initPlayer = (player: Player): void => {
-    const opponents: Opponent[] = this.players.filter(({ id }) => player.id !== id).map(player => toOpponent(player));
-    const cardsInPile = this.api.service<CardPileService>(Service.CardPile).cardsInPile;
+    const opponents: Opponent[] = this.players.filter(({ id }) => player.id !== id).map((player) => toOpponent(player));
+    const { cardsInPile } = this.api.services.CardPile;
 
     const initPlayerData: InitPlayerDataContent = {
       newPlayer: player,
@@ -107,10 +135,10 @@ export class PlayerService extends BaseService {
 
   getNextPlayer(): Player {
     const nextPlayerPos = this.getNextPlayerPos(this.playerTurnPosition);
-    return this.players.find(player => player.position === nextPlayerPos);
+    return this.players.find((player) => player.position === nextPlayerPos) as Player;
   }
 
-  getSocketForPlayer(player: Player): any {
+  getSocketForPlayer(player: Player): Socket {
     return this.playerSockets[player.id];
   }
 
@@ -123,23 +151,23 @@ export class PlayerService extends BaseService {
     this.playerTurnPosition = this.getNextPlayerPos(this.playerTurnPosition);
     this.api.sendToAllSockets({ name: ServerEvent.SetPlayerTurn, value: { position: this.playerTurnPosition } });
 
-    const { areAnyEffectsInStack, runFirstEffect } = this.api.service<CardEffectService>(Service.CardEffect);
+    const { areAnyEffectsInStack, runAllCardEffects } = this.api.services.CardEffect;
 
-    const player = this.players.find(player => player.position === this.playerTurnPosition);
+    const player = this.players.find((player) => player.position === this.playerTurnPosition);
 
-    if (areAnyEffectsInStack()) {
-      runFirstEffect(player, 'onNextPlayerTurn');
+    if (areAnyEffectsInStack() && player) {
+      runAllCardEffects(player, 'onNextPlayerTurn');
     } else {
       console.log('No card effects found in stack');
     }
   }
 
   removePlayer(id: string): string {
-    const playerToRemove = this.players.find(player => player.id == id);
+    const playerToRemove = this.players.find((player) => player.id == id);
 
-    if (playerToRemove.position === this.playerTurnPosition) this.setNextPlayersTurn();
+    if (playerToRemove?.position === this.playerTurnPosition) this.setNextPlayersTurn();
 
-    this.players = this.players.filter(player => player.id !== id);
+    this.players = this.players.filter((player) => player.id !== id);
     console.log(`Removed player for client with id: ${id}`);
 
     this.api.sendToAllSockets({ name: ServerEvent.RemoveOpponent, value: { id } });
@@ -149,8 +177,8 @@ export class PlayerService extends BaseService {
 
   private getFreeTablePosition = (): number => {
     let freePos = 1;
-    const takenPositions = this.players.map(player => player.position).sort();
-    takenPositions.every(pos => {
+    const takenPositions = this.players.map((player) => player.position).sort();
+    takenPositions.every((pos) => {
       if (freePos === pos) {
         freePos = pos + 1;
         return true;
@@ -160,11 +188,12 @@ export class PlayerService extends BaseService {
   };
 
   private isPlayersTurn(id: userId): boolean {
-    return this.players.find(player => player.id === id).position === this.playerTurnPosition;
+    return this.players.find((player) => player.id === id)?.position === this.playerTurnPosition;
   }
 
   private getNextPlayerPos = (currentPos: number): number => {
-    let smallestPosFound: number, nextHigherPos: number;
+    let smallestPosFound = 0;
+    let nextHigherPos = 0;
     for (let i = 0; i < this.players.length; i++) {
       const pos = this.players[i].position;
 
@@ -181,17 +210,17 @@ export class PlayerService extends BaseService {
     const hasCardsLeft = player.cards.length > 0;
     if (hasCardsLeft) return;
 
-    const topCardEffect = await this.api.service<CardEffectService>(Service.CardEffect).getTopCardEffect();
+    const topCardEffect = await this.api.services.CardEffect.getTopCardEffect();
     if (topCardEffect) {
       console.log('Player played effect card as last card. Player picks up at least two cards');
-      this.api.service<CardEffectService>(Service.CardEffect).cardsToPickup += 2;
-      const { pickupCard } = this.api.service<CardEffectService>(Service.CardEffect);
+      this.api.services.CardEffect.cardsToPickup += 2;
+      const { pickupCard } = this.api.services.CardEffect;
       pickupCard(player);
     }
     if (!topCardEffect) {
       console.log('Player wins');
 
-      const { endGameWithWinningPlayer } = this.api.service<GameService>(Service.Game);
+      const { endGameWithWinningPlayer } = this.api.services.Game;
       endGameWithWinningPlayer(player);
 
       const socket = this.getSocketForPlayer(player);

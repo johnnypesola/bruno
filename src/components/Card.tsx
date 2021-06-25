@@ -1,18 +1,29 @@
-import React from 'react';
+import { throttle } from 'lodash';
+import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
-import { CardValue, CardColor } from '../types/commonTypes';
+import { CardValue, CardColor, Coords } from '../types/commonTypes';
 
 interface ComponentProps {
   value: CardValue;
   color: CardColor;
   isConcealed: boolean;
+  isSelected?: boolean;
   onClick?: () => void;
+  onDragUp?: () => void;
+  onDragDown?: () => void;
   rotation?: number;
   offsetX?: number;
   offsetY?: number;
 }
 
-const CardContainer = styled.div<ComponentProps>`
+type CardContainerProps = ComponentProps & { x: number; y: number; isClickable: boolean };
+
+const CardContainer = styled.div.attrs<CardContainerProps>(({ offsetX, x, offsetY, y }) => ({
+  style: {
+    top: offsetY ? `${offsetY + y}px` : `${y}px`,
+    left: offsetX ? `${offsetX + x}px` : `${x}px`,
+  },
+}))<CardContainerProps>`
   margin: 2px;
   display: inline-block;
   border: 6px solid white;
@@ -25,10 +36,8 @@ const CardContainer = styled.div<ComponentProps>`
   width: 30px;
   user-select: none;
   box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.5);
-  ${({ offsetX }) => (offsetX ? `left: ${offsetX}px;` : '')}
-  ${({ offsetY }) => (offsetY ? `top: ${offsetY}px;` : '')}
   ${({ rotation }) => (rotation ? `transform: rotate(${rotation}deg);` : '')}
-  ${({ onClick }) => (onClick ? 'cursor: pointer;' : '')}
+  ${({ isClickable }) => (isClickable ? 'cursor: pointer;' : '')}
 `;
 
 const Circle = styled.div`
@@ -50,7 +59,7 @@ const ValueContainer = styled.div<{ cardColor: CardColor }>`
   position: absolute;
   top: 20px;
   left: 15px;
-  color: ${props => props.cardColor};
+  color: ${(props) => props.cardColor};
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 1);
 `;
 
@@ -61,24 +70,71 @@ const Text = styled.div`
   transform: rotate(12deg);
 `;
 
-const Card: React.FC<ComponentProps> = ({ color, value, isConcealed, onClick, rotation, offsetX, offsetY }) => (
-  <CardContainer
-    color={color}
-    isConcealed={isConcealed}
-    onClick={onClick}
-    rotation={rotation}
-    offsetX={offsetX}
-    offsetY={offsetY}
-    value={value}
-  >
-    {!isConcealed && (
-      <>
-        <Circle />
-        <ValueContainer cardColor={color}>{value}</ValueContainer>
-      </>
-    )}
-    {isConcealed && <Text>Bruno</Text>}
-  </CardContainer>
-);
+const Card: React.FC<ComponentProps> = ({
+  color,
+  value,
+  isConcealed,
+  isSelected,
+  onClick,
+  onDragUp,
+  onDragDown,
+  rotation,
+  offsetX,
+  offsetY,
+}) => {
+  const [initDragPos, setInitDragPos] = useState<Coords>();
+
+  const dragTriggerYOffset = 5;
+
+  const handleDragStart = useCallback((e: React.MouseEvent) => setInitDragPos({ x: e.pageX, y: e.pageY }), []);
+
+  const handleDragEnd = useCallback(
+    (e: React.MouseEvent) => {
+      if (initDragPos) {
+        const yOffset = e.pageY - initDragPos.y;
+        if (Math.abs(yOffset) < dragTriggerYOffset) handleClick();
+      }
+      setInitDragPos(undefined);
+    },
+    [initDragPos],
+  );
+
+  const handleClick = useCallback(() => onClick && onClick(), [onClick]);
+
+  const handleDrag = useCallback(
+    throttle((e: React.MouseEvent) => {
+      if (!onDragUp || !onDragDown || !initDragPos || e.buttons !== 1) return;
+      const yOffset = e.pageY - initDragPos.y;
+
+      if (yOffset <= -dragTriggerYOffset) onDragUp();
+      if (yOffset >= dragTriggerYOffset) onDragDown();
+    }, 100),
+    [initDragPos, dragTriggerYOffset, onDragUp, onDragDown],
+  );
+  return (
+    <CardContainer
+      color={color}
+      isConcealed={isConcealed}
+      rotation={rotation}
+      offsetX={offsetX}
+      offsetY={offsetY}
+      value={value}
+      onMouseDown={handleDragStart}
+      onMouseUp={handleDragEnd}
+      onMouseMove={handleDrag}
+      x={0}
+      y={isSelected ? -70 : 0}
+      isClickable={!!onClick}
+    >
+      {!isConcealed && (
+        <>
+          <Circle />
+          <ValueContainer cardColor={color}>{value}</ValueContainer>
+        </>
+      )}
+      {isConcealed && <Text>Bruno</Text>}
+    </CardContainer>
+  );
+};
 
 export default Card;

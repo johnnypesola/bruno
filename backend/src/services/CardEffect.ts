@@ -1,12 +1,10 @@
-import { CardInHand, CardInPile, Player } from '../../../src/types/commonTypes';
-import { CardPileService } from '../services/CardPile';
+import { CardInHand, CardInHandWithIndex, Player } from '../../../src/types/commonTypes';
 import { ApiServer } from '../ApiServer';
-import { Service } from '../../../src/types/services';
 import { ServerEvent } from '../../../src/types/serverEventTypes';
 import { cardEffects, CardEffectData } from '../cardEffects';
 import { BaseService } from './Base';
-import { PlayerService } from './Player';
 import { toOpponent, getRandomCard } from '../../utils';
+import { pull, pullAt } from 'lodash';
 
 export class CardEffectService extends BaseService {
   effectsStack: CardEffectData[];
@@ -18,8 +16,8 @@ export class CardEffectService extends BaseService {
     this.cardsToPickup = 0;
   }
 
-  doesCardHaveAnEffect = (card: CardInHand | CardInPile): boolean => {
-    return Object.keys(cardEffects).some(val => val == card.value);
+  doesCardHaveAnEffect = (card: CardInHand): boolean => {
+    return Object.keys(cardEffects).some((val) => val == card.value);
   };
 
   doesCardMatchEffectStack = (card: CardInHand): boolean => {
@@ -32,7 +30,7 @@ export class CardEffectService extends BaseService {
   };
 
   getTopCardEffect = async (): Promise<CardEffectData | void> => {
-    const topCard = await this.api.service<CardPileService>(Service.CardPile).getTopCard();
+    const topCard = await this.api.services.CardPile.getTopCard();
     return cardEffects[topCard.value];
   };
 
@@ -50,35 +48,24 @@ export class CardEffectService extends BaseService {
     this.effectsStack.push(cardEffects[card.value]);
   };
 
-  addEffectsToStack = (effectsData: CardEffectData[]): void => {
-    console.log('Added card effects to stack');
-    effectsData.forEach(effect => this.effectsStack.push(effect));
-  };
-
-  runFirstEffect = (player: Player, occasion: 'onPlayCard' | 'onNextPlayerTurn' | 'onPickUpCard'): void => {
+  runAllCardEffects = (player: Player, occasion: 'onPlayCard' | 'onNextPlayerTurn' | 'onPickUpCard'): void => {
     if (!this.effectsStack.length) return;
-    const { effect, resolveOn } = this.effectsStack[0];
+    const effectsToRun = this.effectsStack.filter((effect) => !!effect.callback[occasion]);
 
-    if (resolveOn == occasion) this.resolveFirstEffect();
+    pull(this.effectsStack, ...effectsToRun);
 
-    if (effect && effect[occasion]) {
-      const socket = this.api.service<PlayerService>(Service.Player).getSocketForPlayer(player);
+    effectsToRun.forEach(({ callback }) => {
+      const socket = this.api.services.Player.getSocketForPlayer(player);
       console.log('Running stacked card effect', occasion);
-      effect[occasion]({ player, api: this.api, socket });
-    }
-  };
-
-  resolveFirstEffect = (): void => {
-    if (this.areAnyEffectsInStack()) {
-      console.log('Resolving stacked card effect');
-      this.effectsStack.shift();
-    } else {
-      console.log('No effects found in stack');
-    }
+      const callbackToRun = callback[occasion];
+      if (callbackToRun !== undefined) {
+        callbackToRun({ player, api: this.api, socket });
+      }
+    });
   };
 
   canPlayCard = async (card: CardInHand): Promise<void> => {
-    const topCard = await this.api.service<CardPileService>(Service.CardPile).getTopCard();
+    const topCard = await this.api.services.CardPile.getTopCard();
 
     let canPlay = this.cardsToPickup == 0 && (topCard.value === card.value || card.color === topCard.color);
 
@@ -97,24 +84,63 @@ export class CardEffectService extends BaseService {
       return Promise.reject();
     }
   };
-  playCard = async (player: Player, cardIndex: number): Promise<void> => {
-    const playedCard = player.cards.splice(cardIndex, 1)[0];
-    this.api.service<CardPileService>(Service.CardPile).addCardToPile(playedCard);
 
-    this.stackPlayedCardEffect(playedCard);
+  canSelectCard = async (player: Player, cardIndex: number, isSelected: boolean): Promise<void> => {
+    if (!isSelected) return Promise.resolve();
+    const cardToSelect = player.cards[cardIndex];
+    const firstSelectedCard = player.cards.find((card) => card.isSelected);
 
-    this.runFirstEffect(player, 'onPlayCard');
+    console.log(firstSelectedCard?.value, cardToSelect.value);
+    if (firstSelectedCard?.value == cardToSelect.value) return Promise.resolve();
+    if (firstSelectedCard) return Promise.reject();
+    return this.canPlayCard(cardToSelect);
+  };
 
-    const socket = this.api.service<PlayerService>(Service.Player).getSocketForPlayer(player);
-    this.api.sendToSocket({ name: ServerEvent.PlayerPlaysCard, value: { newCards: player.cards } }, socket);
+  selectCard = async (player: Player, cardIndex: number, isSelected: boolean): Promise<void> => {
+    if (isSelected) {
+      player.cards[cardIndex].isSelected = isSelected;
+      const nextOrderNum = player.cards.filter(({ isSelected }) => isSelected).length;
+      player.cards[cardIndex].selectedOrder = nextOrderNum;
+    } else {
+      player.cards.forEach((card) => (card.isSelected = false));
+    }
+
+    const socket = this.api.services.Player.getSocketForPlayer(player);
+    this.api.sendToSocket({ name: ServerEvent.PlayerSelectsCard, value: { newCards: player.cards } }, socket);
     const opponent = toOpponent(player);
     this.api.sendToOtherSockets({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
+  };
 
-    this.api.service<PlayerService>(Service.Player).setNextPlayersTurn();
+  canPlaySelectedCards = (player: Player): boolean => !!player.cards.find(({ isSelected }) => isSelected);
+
+  playSelectedCards = async (player: Player): Promise<void> => {
+    const cardsToPlay = this.getSelectedCardsInOrder(player.cards);
+    this.playCards(
+      player,
+      cardsToPlay.map((card) => card.index),
+    );
+  };
+
+  playCards = async (player: Player, cardIndexes: number[]): Promise<void> => {
+    const playedCards = pullAt(player.cards, cardIndexes);
+    this.runAllCardEffects(player, 'onPlayCard');
+
+    playedCards.forEach((playedCard) => {
+      this.api.services.CardPile.addCardToPile(playedCard);
+
+      this.stackPlayedCardEffect(playedCard);
+
+      const socket = this.api.services.Player.getSocketForPlayer(player);
+      this.api.sendToSocket({ name: ServerEvent.PlayerPlaysCard, value: { newCards: player.cards } }, socket);
+      const opponent = toOpponent(player);
+      this.api.sendToOtherSockets({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
+    });
+
+    this.api.services.Player.setNextPlayersTurn();
   };
 
   pickupCard = async (player: Player): Promise<void> => {
-    const socket = this.api.service<PlayerService>(Service.Player).getSocketForPlayer(player);
+    const socket = this.api.services.Player.getSocketForPlayer(player);
 
     const addCardToPlayer = (): void => {
       const card = getRandomCard(false);
@@ -132,12 +158,22 @@ export class CardEffectService extends BaseService {
     const opponent = toOpponent(player);
     this.api.sendToOtherSockets({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
 
-    this.runFirstEffect(player, 'onPickUpCard');
+    this.runAllCardEffects(player, 'onPickUpCard');
     const mustPickupCard = this.getFirstEffectFromStack()?.playerRestrictions.mustPickUpCard;
 
-    const topCard = await this.api.service<CardPileService>(Service.CardPile).getTopCard();
+    const topCard = await this.api.services.CardPile.getTopCard();
     const topCardEffect = await this.getTopCardEffect();
     if (topCardEffect) topCard.isEffectConsumed = true;
-    if (!mustPickupCard) this.api.service<PlayerService>(Service.Player).setNextPlayersTurn();
+    if (!mustPickupCard) this.api.services.Player.setNextPlayersTurn();
+  };
+
+  private getSelectedCardsInOrder = (cards: CardInHand[]): CardInHandWithIndex[] => {
+    return [...cards]
+      .map((card, index) => ({ ...card, index }))
+      .filter(({ isSelected }) => isSelected)
+      .sort((a, b) => {
+        if (a.selectedOrder == undefined || b.selectedOrder == undefined) return 0;
+        return a.selectedOrder > b.selectedOrder ? 1 : -1;
+      });
   };
 }

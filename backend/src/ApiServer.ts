@@ -1,12 +1,14 @@
 import express from 'express';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { createServer, Server as HttpServer } from 'http';
-import { ServiceType } from './services';
-import { Service } from '../../src/types/services';
+import { ServicesReadonlyMap } from '../../src/types/services';
 import { ApiEvent, GameStateAction } from '../../src/types/serverEventTypes';
 import { Player } from '../../src/types/commonTypes';
 import { PlayerService } from './services/Player';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+import { GameService } from './services/Game';
+import { CardPileService } from './services/CardPile';
+import { CardEffectService } from './services/CardEffect';
 
 export class ApiServer {
   public static readonly PORT: number = 8080;
@@ -14,7 +16,7 @@ export class ApiServer {
   private server: HttpServer;
   private io: Server;
   private port: string | number;
-  private services: { name: Service; instance: ServiceType } | {};
+  public readonly services: ServicesReadonlyMap;
 
   constructor() {
     this._app = express();
@@ -26,7 +28,12 @@ export class ApiServer {
       },
     });
 
-    this.services = {};
+    this.services = {
+      Game: new GameService(this),
+      CardPile: new CardPileService(this),
+      Player: new PlayerService(this),
+      CardEffect: new CardEffectService(this),
+    };
 
     this.server.listen(this.port, () => {
       console.log(`Running server on port ${this.port}`);
@@ -38,21 +45,11 @@ export class ApiServer {
     return this.io.on(event, callback);
   }
 
-  public addService(name: Service, instance: ServiceType): void {
-    this.services[name] = instance;
-  }
-
-  public service<T>(name: Service): T {
-    const instance = this.services[name];
-    if (!instance) throw new Error(`No service instance found for: ${name}`);
-    return instance;
-  }
-
-  public emit(event: ApiEvent, data: any): boolean {
+  public emit(event: ApiEvent, data: unknown): boolean {
     return this.io.emit(event, data);
   }
 
-  public sendToSocket({ name, value }: GameStateAction, socket: any): void {
+  public sendToSocket({ name, value }: GameStateAction, socket: Socket): void {
     socket.emit(name, value);
   }
 
@@ -60,7 +57,7 @@ export class ApiServer {
     this.io.emit(name, value);
   }
 
-  public sendToOtherSockets({ name, value }: GameStateAction, socket: any): void {
+  public sendToOtherSockets({ name, value }: GameStateAction, socket: Socket): void {
     socket.broadcast.emit(name, value);
   }
 
@@ -69,7 +66,7 @@ export class ApiServer {
   }
 
   public sendToOtherPlayers({ name, value }: GameStateAction, player: Player): void {
-    const socket = this.service<PlayerService>(Service.Player).getSocketForPlayer(player);
+    const socket = this.services.Player.getSocketForPlayer(player);
     socket.broadcast.emit(name, value);
   }
 

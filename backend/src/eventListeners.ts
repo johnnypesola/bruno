@@ -1,7 +1,5 @@
-import { Service } from '../../src/types/services';
 import { ApiServer } from './ApiServer';
 import { Room } from './rooms';
-import { PlayerService } from './services/Player';
 import { SystemEvent } from '../../src/types/serverEventTypes';
 import { ClientEvent } from '../../src/types/clientEventTypes';
 
@@ -9,25 +7,35 @@ export type userId = string;
 
 export default (api: ApiServer): void => {
   // Add any new real-time connection to the `everybody` channel
-  api.on(SystemEvent.NewConnection, socket => {
+  api.on(SystemEvent.NewConnection, (socket) => {
     const userId: userId = socket.id;
     socket.join(Room.CardPile);
     console.log(`user ${userId} connected`);
-    api.service<PlayerService>(Service.Player).addPlayer(userId, socket);
+    api.services.Player.addPlayer(userId, socket);
 
     socket.on(SystemEvent.ConnectionClosed, () => {
       console.log(`user ${userId} disconnected`);
-      api.service<PlayerService>(Service.Player).removePlayer(userId);
+      api.services.Player.removePlayer(userId);
     });
 
-    socket.on(ClientEvent.PlaysCard, (cardIndex: number) => {
+    socket.on(ClientEvent.PlayCard, (cardIndex: number) => {
       console.log(`Player ${userId} played card with index`, cardIndex);
-      api.service<PlayerService>(Service.Player).playCard(userId, cardIndex);
+      api.services.Player.playCard(userId, cardIndex);
     });
 
-    socket.on(ClientEvent.PicksUpCard, () => {
+    socket.on(ClientEvent.PlaySelectedCards, () => {
+      console.log(`Player ${userId} played selected cards`);
+      api.services.Player.playSelectedCards(userId);
+    });
+
+    socket.on(ClientEvent.SelectCard, (cardIndex: number, isSelected: boolean) => {
+      console.log(`Player ${userId} selected (${isSelected}) card with index`, cardIndex);
+      api.services.Player.selectCard(userId, cardIndex, isSelected);
+    });
+
+    socket.on(ClientEvent.PickUpCard, () => {
       console.log(`Player ${userId} picked up card`);
-      api.service<PlayerService>(Service.Player).picksUpCard(userId);
+      api.services.Player.picksUpCard(userId);
     });
   });
 };

@@ -1,10 +1,7 @@
 import { Player } from '../../../src/types/commonTypes';
 import { ServerEvent } from '../../../src/types/serverEventTypes';
-import { Service } from '../../../src/types/services';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
-import { CardPileService } from './CardPile';
-import { PlayerService } from './Player';
 
 export class GameService extends BaseService {
   isGameOver: boolean;
@@ -30,8 +27,8 @@ export class GameService extends BaseService {
       if (elapsedSeconds === maxSeconds) {
         this.isGameOver = false;
         this.winningPlayer = undefined;
-        this.api.service<CardPileService>(Service.CardPile).resetCardPile();
-        this.api.service<PlayerService>(Service.Player).resetPlayers();
+        this.api.services.CardPile.resetCardPile();
+        this.api.services.Player.resetPlayers();
 
         clearInterval(interval);
         console.log('Game is now restarted');

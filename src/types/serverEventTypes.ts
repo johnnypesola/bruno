@@ -11,6 +11,7 @@ export enum ServerEvent {
   // Player
   InitPlayer = 'InitPlayer',
   PlayerPlaysCard = 'PlayerPlaysCard',
+  PlayerSelectsCard = 'PlayerSelectsCard',
   PlayerPickedUpCard = 'PlayerPickedUpCard',
   PlayerWins = 'PlayerWins',
 
@@ -48,6 +49,11 @@ export interface RemoveOpponentData {
   value: { id: string };
 }
 
+export interface PlayerSelectsCardData {
+  name: ServerEvent.PlayerSelectsCard;
+  value: { newCards: CardInHand[] };
+}
+
 export interface PlayerPlaysCardData {
   name: ServerEvent.PlayerPlaysCard;
   value: { newCards: CardInHand[] };
@@ -65,7 +71,7 @@ export interface PlayerPicksUpCardData {
 
 export interface PlayerWinsData {
   name: ServerEvent.PlayerWins;
-  value: {};
+  value: Record<string, never>;
 }
 
 export interface SetPlayerTurnData {
@@ -89,6 +95,7 @@ export type GameStateAction =
   | UpdateOpponentData
   | RemoveOpponentData
   | PlayerPlaysCardData
+  | PlayerSelectsCardData
   | OpponentWinsData
   | PlayerPicksUpCardData
   | PlayerWinsData

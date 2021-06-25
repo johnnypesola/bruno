@@ -21,15 +21,26 @@ const App: React.FC = () => {
     return isPlayerInGame && isPlayersTurn;
   };
 
-  const PickUpCard = (): void => {
+  const pickUpCard = (): void => {
     if (!canPlay()) return;
-    socket.emit(ClientEvent.PicksUpCard);
+    socket.emit(ClientEvent.PickUpCard);
   };
 
-  const placeCardFromHand = (cardInHand: CardInHand, cardIndex: number): void => {
+  const playCard = (cardInHand: CardInHand, cardIndex: number): void => {
     if (!canPlay()) return;
 
-    socket.emit(ClientEvent.PlaysCard, cardIndex);
+    socket.emit(ClientEvent.PlayCard, cardIndex);
+  };
+
+  const playSelectedCards = (): void => {
+    if (!canPlay()) return;
+    socket.emit(ClientEvent.PlaySelectedCards);
+  };
+
+  const selectCard = (isSelected: boolean, cardInHand: CardInHand, cardIndex: number): void => {
+    if (!canPlay()) return;
+
+    socket.emit(ClientEvent.SelectCard, cardIndex, isSelected);
   };
 
   return (
@@ -43,13 +54,19 @@ const App: React.FC = () => {
           numberOfPlayers={state.opponents.length + 1}
         >
           {opponent.cards.map((card, index) => (
-            <Card key={index} color={CardColor.Blue} value={CardValue.Eight} isConcealed={true} />
+            <Card
+              key={index}
+              color={CardColor.Blue}
+              value={CardValue.Eight}
+              isConcealed={true}
+              isSelected={card.isSelected}
+            />
           ))}
         </Hand>
       ))}
 
       <Table>
-        <CardDeck onClick={() => PickUpCard()} />
+        <CardDeck onClick={() => pickUpCard()} />
         <CardPile />
       </Table>
 
@@ -65,7 +82,10 @@ const App: React.FC = () => {
             color={card.color}
             value={card.value}
             isConcealed={card.isConcealed}
-            onClick={() => placeCardFromHand(card, index)}
+            onClick={() => (card.isSelected ? playSelectedCards() : playCard(card, index))}
+            onDragUp={() => !card.isSelected && selectCard(true, card, index)}
+            onDragDown={() => card.isSelected && selectCard(false, card, index)}
+            isSelected={card.isSelected}
           />
         ))}
       </Hand>

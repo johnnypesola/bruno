@@ -30,7 +30,7 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     if (action.name === ServerEvent.UpdateOpponent) {
       const { opponent } = action.value;
 
-      const updatedOpponents = state.opponents.map(orgOpponent =>
+      const updatedOpponents = state.opponents.map((orgOpponent) =>
         orgOpponent.id === opponent.id ? opponent : orgOpponent,
       );
 
@@ -39,9 +39,15 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
 
     if (action.name === ServerEvent.RemoveOpponent) {
       const { id } = action.value;
-      const newOpponents = state.opponents.filter(opponent => opponent.id !== id);
+      const newOpponents = state.opponents.filter((opponent) => opponent.id !== id);
 
       return set(['opponents'], [...newOpponents])(state);
+    }
+
+    if (action.name === ServerEvent.PlayerSelectsCard) {
+      const { newCards } = action.value;
+
+      return set(['player', 'cards'], newCards)(state);
     }
 
     if (action.name === ServerEvent.PlayerPlaysCard) {

@@ -1,10 +1,8 @@
+import { Socket } from 'socket.io';
 import { Player, CardValue } from '../../src/types/commonTypes';
 import { ApiServer } from './ApiServer';
-import { PlayerService } from './services/Player';
-import { Service } from '../../src/types/services';
-import { CardEffectService } from './services/CardEffect';
 
-type effectFnData = { player: Player; api: ApiServer; socket: any };
+type effectFnData = { player: Player; api: ApiServer; socket: Socket };
 type effectFn = (data: effectFnData) => void;
 
 type playerRestrictions = {
@@ -15,8 +13,7 @@ type playerRestrictions = {
 
 export type CardEffectData = {
   playerRestrictions: playerRestrictions;
-  resolveOn: 'onPlayCard' | 'onNextPlayerTurn' | 'onPickUpCard' | 'any';
-  effect?: {
+  callback: {
     onPlayCard?: effectFn;
     onNextPlayerTurn?: effectFn;
     onPickUpCard?: effectFn;
@@ -35,10 +32,9 @@ export const cardEffects: CardEffect = {
       canPlaySameCard: true,
       mustPickUpCard: true,
     },
-    resolveOn: 'onNextPlayerTurn',
-    effect: {
+    callback: {
       onNextPlayerTurn: ({ api }) => {
-        api.service<CardEffectService>(Service.CardEffect).cardsToPickup += 2;
+        api.services.CardEffect.cardsToPickup += 2;
       },
     },
   },
@@ -48,10 +44,9 @@ export const cardEffects: CardEffect = {
       canPlaySameCard: false,
       mustPickUpCard: false,
     },
-    resolveOn: 'onNextPlayerTurn',
-    effect: {
-      onPlayCard: ({ api }) => {
-        api.service<PlayerService>(Service.Player).setNextPlayersTurn();
+    callback: {
+      onNextPlayerTurn: ({ api }) => {
+        api.services.Player.setNextPlayersTurn();
       },
     },
   },

@@ -7,7 +7,7 @@ import { GameState } from './types/commonTypes';
 import { GameStateAction } from './types/serverEventTypes';
 
 export const GameStateContext = React.createContext(
-  (null as unknown) as { state: GameState; dispatch: React.Dispatch<GameStateAction> },
+  null as unknown as { state: GameState; dispatch: React.Dispatch<GameStateAction> },
 );
 
 const RootComponent: React.FC = () => {

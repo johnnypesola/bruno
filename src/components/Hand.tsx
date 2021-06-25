@@ -1,6 +1,5 @@
 import styled from 'styled-components';
-import React, { useContext } from 'react';
-import { GameStateContext } from '..';
+import React from 'react';
 
 const getTablePositionStyle = (tablePosition: number, numberOfPlayers: number): string => {
   const scale = 1 - numberOfPlayers * 0.1;
@@ -48,7 +47,9 @@ const getCardMargin = (cardsCount: number, isPlayer: boolean): string => {
 const getHighlightedStyle = (isHighlighted: boolean): string => {
   if (!isHighlighted) return '';
   return `
-    box-shadow: -20px 0 40px 10px rgba(255,255,255,0.7);
+    box-shadow: 0 0 30px 35px rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.7);
+    border-radius: 20px;
   `;
 };
 

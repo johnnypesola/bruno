@@ -25,9 +25,13 @@ export interface CardInHand {
   color: CardColor;
   value: CardValue;
   isConcealed: boolean;
+  isSelected: boolean;
+  selectedOrder?: number;
 }
 
-export type HiddenCard = null;
+export type CardInHandWithIndex = CardInHand & { index: number };
+
+export type HiddenCard = Pick<CardInHand, 'isSelected'>;
 
 export interface CardInPile {
   color: CardColor;
@@ -70,3 +74,5 @@ export interface GameState {
   toasterMessage?: string;
   dialogMessage?: string;
 }
+
+export type Coords = { x: number; y: number };
