@@ -9,11 +9,13 @@ import { pull, pullAt } from 'lodash';
 export class CardEffectService extends BaseService {
   effectsStack: CardEffectData[];
   cardsToPickup: number;
+  isReversePlay: boolean;
 
   constructor(api: ApiServer) {
     super(api);
     this.effectsStack = [];
     this.cardsToPickup = 0;
+    this.isReversePlay = false;
   }
 
   doesCardHaveAnEffect = (card: CardInHand | CardInPile): card is CardWithEffect => {
@@ -21,7 +23,7 @@ export class CardEffectService extends BaseService {
   };
 
   doesCardMatchEffectStack = (card: CardInHand): boolean => {
-    const effectValue = this.effectsStack[0].playerRestrictions.cardValue;
+    const effectValue = this.effectsStack[0].cardValue;
     return card.value === effectValue;
   };
 
@@ -71,9 +73,9 @@ export class CardEffectService extends BaseService {
 
     const topCardEffect = await this.getTopCardEffect();
     if (!topCard.isEffectConsumed && topCardEffect) {
-      const { mustPickUpCard, canPlaySameCard, cardValue } = topCardEffect.playerRestrictions;
+      const { mustPickUpCard, canPlaySameCard } = topCardEffect.playerRestrictions;
       if (mustPickUpCard) canPlay = false;
-      if (canPlaySameCard && cardValue === card.value) canPlay = true;
+      if (canPlaySameCard && topCardEffect.cardValue === card.value) canPlay = true;
     }
 
     if (canPlay) {
@@ -123,7 +125,6 @@ export class CardEffectService extends BaseService {
 
   playCards = async (player: Player, cardIndexes: number[]): Promise<void> => {
     const playedCards = pullAt(player.cards, cardIndexes);
-    this.runAllCardEffects(player, 'onPlayCard');
 
     playedCards.forEach((playedCard) => {
       this.api.services.CardPile.addCardToPile(playedCard);
@@ -135,6 +136,8 @@ export class CardEffectService extends BaseService {
       const opponent = toOpponent(player);
       this.api.sendToOtherSockets({ name: ServerEvent.UpdateOpponent, value: { opponent } }, socket);
     });
+
+    this.runAllCardEffects(player, 'onPlayCard');
 
     this.api.services.Player.setNextPlayersTurn();
   };

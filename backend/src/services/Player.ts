@@ -192,18 +192,29 @@ export class PlayerService extends BaseService {
   }
 
   private getNextPlayerPos = (currentPos: number): number => {
-    let smallestPosFound = 0;
-    let nextHigherPos = 0;
-    for (let i = 0; i < this.players.length; i++) {
-      const pos = this.players[i].position;
+    let firstPlayerPos: number | undefined;
+    let nextPlayerPos = 0;
+    const { isReversePlay } = this.api.services.CardEffect;
 
-      if (!smallestPosFound || pos < smallestPosFound) smallestPosFound = pos;
-      if (!nextHigherPos && pos > currentPos) {
-        nextHigherPos = pos;
-        break;
+    if(isReversePlay) {
+      for (let i = this.players.length - 1; i >= 0; i--) {
+        const playerPos = this.players[i].position;
+
+        if (!firstPlayerPos || playerPos > firstPlayerPos) firstPlayerPos = playerPos;
+        if (playerPos < currentPos) nextPlayerPos = playerPos;
+        if(nextPlayerPos) break;
+      }
+    } else {
+      for (let i = 0; i < this.players.length; i++) {
+        const playerPos = this.players[i].position;
+
+        if (!firstPlayerPos || playerPos < firstPlayerPos) firstPlayerPos = playerPos;
+        if (playerPos > currentPos) nextPlayerPos = playerPos;
+        if(nextPlayerPos) break;
       }
     }
-    return nextHigherPos || smallestPosFound;
+    
+    return nextPlayerPos || firstPlayerPos || 0;
   };
 
   private async handleLastCardPlayed(player: Player): Promise<void> {

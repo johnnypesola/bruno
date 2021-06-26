@@ -16,9 +16,9 @@ export enum CardValue {
   Seven = '7',
   Eight = '8',
   Nine = '9',
-  // Reverse = '⇄',
   PlusTwo = '✌️',
   Skip = '🚫',
+  Reverse = '⇄',
 }
 
 export interface CardInHand {

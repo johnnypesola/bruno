@@ -6,12 +6,12 @@ type effectFnData = { player: Player; api: ApiServer; socket: Socket };
 type effectFn = (data: effectFnData) => void;
 
 type playerRestrictions = {
-  cardValue: CardValue;
   canPlaySameCard: boolean;
   mustPickUpCard: boolean;
 };
 
 export type CardEffectData = {
+  cardValue: CardValue;
   playerRestrictions: playerRestrictions;
   callback: {
     onPlayCard?: effectFn;
@@ -23,12 +23,13 @@ export type CardEffectData = {
 export type CardEffect = {
   [CardValue.PlusTwo]: CardEffectData;
   [CardValue.Skip]: CardEffectData;
+  [CardValue.Reverse]: CardEffectData;
 };
 
 export const cardEffects: CardEffect = {
   [CardValue.PlusTwo]: {
+    cardValue: CardValue.PlusTwo,
     playerRestrictions: {
-      cardValue: CardValue.PlusTwo,
       canPlaySameCard: true,
       mustPickUpCard: true,
     },
@@ -39,8 +40,8 @@ export const cardEffects: CardEffect = {
     },
   },
   [CardValue.Skip]: {
+    cardValue: CardValue.Skip,
     playerRestrictions: {
-      cardValue: CardValue.Skip,
       canPlaySameCard: false,
       mustPickUpCard: false,
     },
@@ -50,6 +51,19 @@ export const cardEffects: CardEffect = {
       },
     },
   },
+  [CardValue.Reverse]: {
+    cardValue: CardValue.Reverse,
+    playerRestrictions: {
+      canPlaySameCard: false,
+      mustPickUpCard: false
+    },
+    callback: {
+      onPlayCard: ({ api }) => {
+        const { isReversePlay } = api.services.CardEffect;
+        api.services.CardEffect.isReversePlay = !isReversePlay;
+      }
+    }
+  }
 };
 
 export type CardWithEffect = Omit<CardInHand, "value"> & { value: keyof CardEffect };

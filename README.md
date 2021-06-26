@@ -1,6 +1,6 @@
 # Bruno
 
-A fully working Uno clone with multiplayer support and some quirks.
+A cardgame similar to Uno with multiplayer support.
 
 ## About
 
