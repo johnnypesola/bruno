@@ -24,6 +24,12 @@ module.exports = {
       },
     ],
     'react/prop-types': 'off',
+    'prettier/prettier': [
+      'error',
+      {
+        endOfLine: 'auto',
+      },
+    ],
   },
   settings: {
     react: {
