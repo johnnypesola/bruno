@@ -1,12 +1,13 @@
-import { Illustration, Ellipse, Rect, Cylinder, Box, Cone, Group, useRender, Anchor } from 'react-zdog';
+import { Illustration, Ellipse, Rect, Cylinder, Box, Cone, Group, useRender, Anchor, Shape } from 'react-zdog';
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Anchor as ZdogAnchor } from 'zdog';
 
 const Container = styled.div`
   position: relative;
-  height: 800px;
-  width: 800px;
+  height: 100vh;
+  width: 100vw;
+  // display: flex;
 `;
 
 const TAU = Math.PI * 2;
@@ -93,6 +94,32 @@ const Bottle: React.FC<Translate> = ({ translate: { x, y, z } }) => (
   </>
 );
 
+const Fork: React.FC<Translate> = ({ translate: { x, y, z } }) => (
+  <Shape
+    path={[
+      // triangle
+      { z, x: x + 14, y: y + -20 },
+      { z, x: x + 12, y: y + -18 },
+      { z, x: x + 13, y: y + 3 },
+      { z, x: x + 11, y: y + 4 },
+      { z, x: x + 10, y: y + 6 },
+      { z, x: x + 11, y: y + 15 },
+      { z, x: x + 12, y: y + 4 },
+      { z, x: x + 14, y: y + 15 },
+      { z, x: x + 16, y: y + 4 },
+      { z, x: x + 17, y: y + 15 },
+      { z, x: x + 18, y: y + 6 },
+      { z, x: x + 17, y: y + 4 },
+      { z, x: x + 15, y: y + 3 },
+      { z, x: x + 16, y: y + -18 },
+    ]}
+    // closed by default
+    stroke={0.8}
+    color={'#888'}
+    fill
+  />
+);
+
 const Cards: React.FC<Translate> = ({ translate: { x, y, z } }) => (
   <Group updateSort={true}>
     <Box
@@ -118,6 +145,7 @@ const Cards: React.FC<Translate> = ({ translate: { x, y, z } }) => (
       fill
       translate={{ z, x, y: y - 15.1 }}
     />
+    {/* <Ellipse diameter={5} rotate={{ x: -(TAU / 4) }} translate={{ z, x, y: y - 15.2 }} stroke={1} color={'#e62'} /> */}
   </Group>
 );
 
@@ -137,24 +165,88 @@ const Table: React.FC = () => (
   </>
 );
 
-const BrunoLogoText = styled.h1`
-  position: absolute;
-  font-size: 70px;
+const LogoText = styled.h1`
+  font-size: 3em;
   font-weight: bold;
   letter-spacing: -0.08em;
   text-transform: uppercase;
-  color: #c25;
-  text-shadow: -2px -2px 0px #e62;
-  top: 20px;
-  left: 100px;
+  margin: 0;
+  color: #622;
+  text-shadow: -3px 0px 0px #622;
+  transform: rotate(-3deg);
+  height: 1em;
+  line-height: 1.6em;
   font-family: 'Comic Sans MS', 'Comic Sans', cursive;
-  transform: rotate(2deg);
+`;
+
+const LogoCircle = styled.div`
+  margin-top: 1em;
+  text-align: center;
+  width: 260px;
+  height: 115px;
+  border-radius: 50%;
+  background: #e62;
+  transform: skew(5deg, 3deg);
+`;
+
+const Menu = styled.div`
+  color: #e62;
+  position: absolute;
+  left: 0;
+  background: #622;
+  height: 100%;
+  width: 300px;
+  z-index: 2;
+  opacity: 0.95;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: column;
+  user-select: none;
+`;
+
+const MenuItem = styled.h3`
+  line-height: 1.3em;
+  margin: 1em 0 0 0;
+  font-family: Segoe UI, Frutiger, Dejavu Sans, Helvetica Neue, Arial, sans-serif;
+  width: 100%;
+  text-align: center;
+  // border-radius: 5em;
+
+  &:hover {
+    color: #622;
+    background: #e62;
+  }
+
+  &:nth-child(odd) {
+    transform: rotate(1deg);
+  }
+  &:nth-child(odd):hover {
+    border-bottom-right-radius: 20%;
+    border-bottom-left-radius: 5%;
+    border-top-left-radius: 70%;
+  }
+
+  &:nth-child(even) {
+    transform: rotate(-1deg);
+  }
+  &:nth-child(even):hover {
+    border-bottom-right-radius: 40%;
+    border-bottom-left-radius: 15%;
+    border-top-left-radius: 30%;
+  }
 `;
 
 const GfxRoot: React.FC = () => (
   <Container>
-    <BrunoLogoText>Bruno</BrunoLogoText>
-    <Illustration zoom={3.5} dragRotate={false} rotate={{ y: 0, x: -(Math.PI / 6) }} resize="fullscreen">
+    <Menu>
+      <LogoCircle>
+        <LogoText>Bruno</LogoText>
+      </LogoCircle>
+      <MenuItem>LET&apos;S PLAY</MenuItem>
+      <MenuItem>SPECTATE</MenuItem>
+    </Menu>
+    <Illustration zoom={3.5} dragRotate={true} rotate={{ y: 0, x: -(Math.PI / 6) }} resize={true}>
       <Art />
     </Illustration>
   </Container>
@@ -173,6 +265,7 @@ const Art: React.FC = () => {
       <Group onClick={() => setIsRotating(!isRotating)}>
         <TableLeg translate={{ y: 55, x: 0, z: 0 }} />
         <Table />
+        <Fork translate={{ x: 40, y: -20, z: 30 }} />
         <Cards translate={{ x: -40, y: 0, z: 20 }} />
         <Bottle translate={{ x: -60, y: 0, z: -30 }} />
       </Group>
