@@ -41,6 +41,31 @@ const TableLeg: React.FC<Translate> = ({ translate }) => (
   </Group>
 );
 
+const Glass: React.FC<Translate> = ({ translate: { x, y, z } }) => (
+  <>
+    <Cylinder
+      diameter={10}
+      length={10}
+      rotate={{ x: -(TAU / 4) }}
+      translate={{ x, y: y - 8, z }}
+      stroke={true}
+      color={'#699'}
+      topFace={false}
+    />
+    <Cylinder
+      diameter={8}
+      length={3}
+      rotate={{ x: -(TAU / 4) }}
+      translate={{ x, y: y - 5, z }}
+      stroke={false}
+      color={'#B85'}
+      frontFace={false}
+      backface={'#C96'}
+    />
+    <Ellipse diameter={10} rotate={{ x: -(TAU / 4) }} translate={{ x, y: y - 14, z }} stroke={1} color={'#669292'} />
+  </>
+);
+
 const Bottle: React.FC<Translate> = ({ translate: { x, y, z } }) => (
   <>
     <Cylinder
@@ -63,7 +88,6 @@ const Bottle: React.FC<Translate> = ({ translate: { x, y, z } }) => (
       frontFace={'#2a2'}
       backface={'#2a2'}
     />
-
     <Cylinder
       diameter={17}
       length={20}
@@ -84,6 +108,16 @@ const Bottle: React.FC<Translate> = ({ translate: { x, y, z } }) => (
       translate={{ x, y: y - 25, z }}
     />
     <Cylinder
+      diameter={14}
+      length={7}
+      rotate={{ x: -(TAU / 4) }}
+      translate={{ x, y: y - 10, z }}
+      stroke={false}
+      color={'#B85'}
+      frontFace={false}
+      backface={'#C96'}
+    />
+    <Cylinder
       diameter={6}
       length={2}
       rotate={{ x: -(TAU / 4) }}
@@ -94,8 +128,62 @@ const Bottle: React.FC<Translate> = ({ translate: { x, y, z } }) => (
   </>
 );
 
+const Hotdog: React.FC<Translate> = ({ translate: { x, y, z } }) => (
+  <Group updateSort={true}>
+    <Ellipse
+      diameter={30}
+      translate={{ x, y: y - 31, z: z - 1 }}
+      stroke={2}
+      quarters={1}
+      rotate={{ x: -(TAU / 2), z: -(TAU / 8) }}
+      color={'#C25'}
+    />
+    <Ellipse
+      diameter={30}
+      translate={{ x, y: y - 31, z: z + 1 }}
+      stroke={2}
+      quarters={1}
+      rotate={{ x: -(TAU / 2), z: -(TAU / 8) }}
+      color={'#EA0'}
+    />
+    <Ellipse
+      diameter={40}
+      translate={{ x, y: y - 30, z }}
+      stroke={10}
+      quarters={1}
+      rotate={{ x: -(TAU / 2), z: -(TAU / 8) }}
+      color={'#622'}
+    />
+    <Shape
+      path={[
+        { x: x - 10, y: y - 10, z: z + 8 },
+        { x: x + 10, y: y - 10, z: z + 8 },
+      ]}
+      stroke={8}
+      color={'#e62'}
+    />
+    <Shape
+      path={[
+        { x: x - 10, y: y - 10, z: z - 8 },
+        { x: x + 10, y: y - 10, z: z - 8 },
+      ]}
+      stroke={8}
+      color={'#e62'}
+    />
+    <Shape
+      path={[
+        { x: x - 5, y: y - 10, z: z },
+        { x: x + 5, y: y - 10, z: z },
+      ]}
+      stroke={16}
+      color={'#e62'}
+    />
+  </Group>
+);
+
 const Fork: React.FC<Translate> = ({ translate: { x, y, z } }) => (
   <Shape
+    rotate={{ z: TAU / 8 }}
     path={[
       // triangle
       { z, x: x + 14, y: y + -20 },
@@ -257,15 +345,17 @@ const Art: React.FC = () => {
   const [isRotating, setIsRotating] = useState(true);
   useRender((t: unknown) => {
     if (!elRef || !elRef.current) return;
-    if (isRotating) elRef.current.rotate.y += 0.005;
+    if (isRotating) elRef.current.rotate.y += 0.001;
   });
 
   return (
     <Anchor ref={elRef}>
-      <Group onClick={() => setIsRotating(!isRotating)}>
+      <Group>
         <TableLeg translate={{ y: 55, x: 0, z: 0 }} />
         <Table />
-        <Fork translate={{ x: 40, y: -20, z: 30 }} />
+        <Glass translate={{ x: 20, y: 0, z: -70 }} />
+        <Hotdog translate={{ x: 70, y: 0, z: 0 }} />
+        {/* <Fork translate={{ x: 20, y: -70, z: 0 }} /> */}
         <Cards translate={{ x: -40, y: 0, z: 20 }} />
         <Bottle translate={{ x: -60, y: 0, z: -30 }} />
       </Group>
