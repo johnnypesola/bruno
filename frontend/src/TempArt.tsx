@@ -1,4 +1,16 @@
-import { Illustration, Ellipse, Rect, Cylinder, Box, Cone, Group, useRender, Anchor, Shape } from 'react-zdog';
+import {
+  Illustration,
+  Ellipse,
+  Rect,
+  Cylinder,
+  Box,
+  Cone,
+  Group,
+  useRender,
+  Anchor,
+  Shape,
+  RoundedRect,
+} from 'react-zdog';
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Anchor as ZdogAnchor } from 'zdog';
@@ -42,7 +54,7 @@ const TableLeg: React.FC<Translate> = ({ translate }) => (
 );
 
 const Glass: React.FC<Translate> = ({ translate: { x, y, z } }) => (
-  <>
+  <Group>
     <Cylinder
       diameter={10}
       length={10}
@@ -63,11 +75,11 @@ const Glass: React.FC<Translate> = ({ translate: { x, y, z } }) => (
       backface={'#C96'}
     />
     <Ellipse diameter={10} rotate={{ x: -(TAU / 4) }} translate={{ x, y: y - 14, z }} stroke={1} color={'#669292'} />
-  </>
+  </Group>
 );
 
 const Bottle: React.FC<Translate> = ({ translate: { x, y, z } }) => (
-  <>
+  <Group>
     <Cylinder
       diameter={10}
       length={5}
@@ -125,7 +137,7 @@ const Bottle: React.FC<Translate> = ({ translate: { x, y, z } }) => (
       stroke={false}
       color={'#E62'}
     />
-  </>
+  </Group>
 );
 
 const Hotdog: React.FC<Translate> = ({ translate: { x, y, z } }) => (
@@ -185,7 +197,6 @@ const Fork: React.FC<Translate> = ({ translate: { x, y, z } }) => (
   <Shape
     rotate={{ z: TAU / 8 }}
     path={[
-      // triangle
       { z, x: x + 14, y: y + -20 },
       { z, x: x + 12, y: y + -18 },
       { z, x: x + 13, y: y + 3 },
@@ -195,17 +206,79 @@ const Fork: React.FC<Translate> = ({ translate: { x, y, z } }) => (
       { z, x: x + 12, y: y + 4 },
       { z, x: x + 14, y: y + 15 },
       { z, x: x + 16, y: y + 4 },
-      { z, x: x + 17, y: y + 15 },
+      { z, x: x + 16.7, y: y + 12.7 },
+      { z, x: x + 17.5, y: y + 12 },
       { z, x: x + 18, y: y + 6 },
       { z, x: x + 17, y: y + 4 },
       { z, x: x + 15, y: y + 3 },
       { z, x: x + 16, y: y + -18 },
     ]}
-    // closed by default
     stroke={0.8}
     color={'#888'}
     fill
   />
+);
+
+const CardPile: React.FC<Translate> = ({ translate: { x, y, z } }) => (
+  <>
+    <Rect
+      width={12}
+      height={20}
+      stroke={0}
+      rotate={{ x: TAU / 4, z: -(TAU / 10) }}
+      color={'#DDD'}
+      fill
+      translate={{ z, x, y }}
+    />
+    <RoundedRect
+      cornerRadius={1}
+      width={10}
+      height={18}
+      stroke={0}
+      rotate={{ x: TAU / 4, z: -(TAU / 10), y: 0 }}
+      color={'#C25'}
+      fill
+      translate={{ z, x, y }}
+    />
+    <Ellipse
+      width={9}
+      height={15}
+      rotate={{ x: TAU / 4, z: -(TAU / 6) }}
+      translate={{ z, x, y }}
+      stroke={0}
+      color={'#DDD'}
+      fill
+    />
+    <Rect
+      width={1}
+      height={3}
+      stroke={0}
+      rotate={{ x: TAU / 4, z: -(TAU / 10) }}
+      color={'#222'}
+      rearFace={false}
+      fill
+      translate={{ z: z - 2, x, y }}
+    />
+    <Rect
+      width={1}
+      height={3}
+      stroke={0}
+      rotate={{ x: TAU / 4, z: -(TAU / 10) }}
+      color={'#222'}
+      rearFace={false}
+      fill
+      translate={{ z, x: x - 2, y }}
+    />
+    <Ellipse
+      width={4}
+      height={3}
+      rotate={{ x: TAU / 4, z: -(TAU / 6) }}
+      translate={{ z: z + 2, x: x + 2, y }}
+      stroke={0}
+      color={'#222'}
+      fill
+    />
+  </>
 );
 
 const Cards: React.FC<Translate> = ({ translate: { x, y, z } }) => (
@@ -285,7 +358,6 @@ const Menu = styled.div`
   height: 100%;
   width: 300px;
   z-index: 2;
-  opacity: 0.95;
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -353,11 +425,16 @@ const Art: React.FC = () => {
       <Group>
         <TableLeg translate={{ y: 55, x: 0, z: 0 }} />
         <Table />
-        <Glass translate={{ x: 20, y: 0, z: -70 }} />
-        <Hotdog translate={{ x: 70, y: 0, z: 0 }} />
-        {/* <Fork translate={{ x: 20, y: -70, z: 0 }} /> */}
+        <CardPile translate={{ x: 0, y: -5, z: 0 }} />
+        <Group updateSort={true}>
+          <Hotdog translate={{ x: 70, y: 0, z: 0 }} />
+          <Fork translate={{ x: 5, y: -42, z: 10 }} />
+        </Group>
         <Cards translate={{ x: -40, y: 0, z: 20 }} />
-        <Bottle translate={{ x: -60, y: 0, z: -30 }} />
+        <Group updateSort={true}>
+          <Bottle translate={{ x: -60, y: 0, z: -30 }} />
+          <Glass translate={{ x: -45, y: -2, z: -40 }} />
+        </Group>
       </Group>
     </Anchor>
   );
