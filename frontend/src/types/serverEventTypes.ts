@@ -1,4 +1,4 @@
-import { Opponent, CardInHand, CardInPile, InitPlayerDataContent } from './commonTypes';
+import { Opponent, CardInHand, CardInPile, InitPlayerDataContent, GameStage } from './commonTypes';
 
 export type ApiEvent = SystemEvent | ServerEvent;
 
@@ -28,7 +28,9 @@ export enum ServerEvent {
   AddCardToPile = 'AddCardToPile',
 
   // Game
-  GameRestarsInSeconds = 'GameRestarsInSeconds',
+  GameEndsInSeconds = 'GameEndsInSeconds',
+  GameStartsInSeconds = 'GameStartsInSeconds',
+  GameStageChange = 'GameStageChange',
 }
 
 export interface InitPlayerData {
@@ -84,9 +86,19 @@ export interface AddCardToPileData {
   value: { card: CardInPile };
 }
 
-export interface GameRestarsInSeconds {
-  name: ServerEvent.GameRestarsInSeconds;
+export interface GameEndsInSeconds {
+  name: ServerEvent.GameEndsInSeconds;
   value: { seconds: number };
+}
+
+export interface GameStartsInSeconds {
+  name: ServerEvent.GameStartsInSeconds;
+  value: { seconds: number };
+}
+
+export interface GameStageChange {
+  name: ServerEvent.GameStageChange;
+  value: { gameStage: GameStage };
 }
 
 export type GameStateAction =
@@ -100,5 +112,7 @@ export type GameStateAction =
   | PlayerPicksUpCardData
   | PlayerWinsData
   | SetPlayerTurnData
-  | GameRestarsInSeconds
+  | GameEndsInSeconds
+  | GameStartsInSeconds
+  | GameStageChange
   | AddCardToPileData;

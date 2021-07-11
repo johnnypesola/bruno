@@ -1,12 +1,11 @@
 import { Shape, Group } from 'react-zdog';
 import React from 'react';
 import { TAU } from 'zdog';
-import { Translate } from './TempArt';
+import { Translate } from './GfxRoot';
 
 const Saw: React.FC<Translate> = ({ translate: { x, y, z } }) => (
-  <Group>
+  <Group rotate={{ y: TAU / 8 }}>
     <Shape
-      // rotate={{ z: TAU / 8 }}
       path={[
         { z: z + 6, x: x, y: y - 20 },
         { z: z + 3, x, y: y - 17 },

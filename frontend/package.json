@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://johnnypesola.github.io/bruno",
   "dependencies": {
+    "@react-spring/zdog": "^9.2.3",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
@@ -18,6 +19,7 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "react-spring": "^9.2.3",
     "react-zdog": "^1.0.11",
     "socket.io-client": "^4.1.2",
     "styled-components": "^5.3.0",

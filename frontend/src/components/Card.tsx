@@ -27,15 +27,15 @@ const CardContainer = styled.div.attrs<CardContainerProps>(({ offsetX, x, offset
   margin: 2px;
   display: inline-block;
   border: 6px solid white;
-  border-radius: 5px;
+  // border-radius: 5px;
   padding: 20px 17px;
-  background: ${({ isConcealed, color }) => (isConcealed ? 'black' : color)};
+  background: ${({ isConcealed, color }) => (isConcealed ? '#622' : color)};
   position: relative;
   color: black;
   height: 60px;
   width: 30px;
   user-select: none;
-  box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.5);
+  // box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.5);
   ${({ rotation }) => (rotation ? `transform: rotate(${rotation}deg);` : '')}
   ${({ isClickable }) => (isClickable ? 'cursor: pointer;' : '')}
 `;
@@ -59,6 +59,7 @@ const ValueContainer = styled.div<{ cardColor: CardColor }>`
   position: absolute;
   top: 20px;
   left: 15px;
+  color: #222;
   color: ${(props) => props.cardColor};
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 1);
 `;
@@ -132,7 +133,6 @@ const Card: React.FC<ComponentProps> = ({
           <ValueContainer cardColor={color}>{value}</ValueContainer>
         </>
       )}
-      {isConcealed && <Text>Bruno</Text>}
     </CardContainer>
   );
 };

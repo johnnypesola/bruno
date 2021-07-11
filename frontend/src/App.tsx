@@ -1,20 +1,39 @@
 import React, { useContext } from 'react';
 import Card from './components/Card';
-import Table from './components/Table';
+import OnTable from './components/OnTable';
 import CardDeck from './components/CardDeck';
-import { CardInHand, Opponent, CardColor, CardValue } from './types/commonTypes';
+import { CardInHand, Opponent, CardColor, NumericCardValue } from './types/commonTypes';
 import { GameStateContext } from '.';
 import Hand from './components/Hand';
 import CardPile from './components/CardPile';
-import useApi from './hooks/useApi';
 import { ClientEvent } from './types/clientEventTypes';
 import Toaster from './components/Toaster';
+import styled from 'styled-components';
+import Menu from './components/Menu';
+
+const CssContainer = styled.div`
+  backface-visibility: visible;
+  perspective-origin: 50% 100%;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: 13vh 2% 0 2%;
+`;
+
+const OpponentsContainer = styled.div`
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+`;
 
 const App: React.FC = () => {
-  const { state } = useContext(GameStateContext);
-
-  const socket = useApi();
-
+  const { state, socket } = useContext(GameStateContext);
   const canPlay = (): boolean => {
     const isPlayersTurn = state.playerTurn === state.player.position;
     const isPlayerInGame = !state.player.hasExitedGame;
@@ -45,51 +64,62 @@ const App: React.FC = () => {
 
   return (
     <>
-      {state.opponents.map((opponent: Opponent, index) => (
+      <Menu />
+      <CssContainer>
+        <OpponentsContainer>
+          {state.opponents.map((opponent: Opponent, index) => (
+            <>
+              {opponent.position && (
+                <Hand
+                  key={index}
+                  isHighlighted={state.gameStage === 'started' && state.playerTurn === opponent.position}
+                  tablePosition={opponent.position}
+                  cardsCount={opponent.cards.length}
+                  numberOfPlayers={state.opponents.length + 1}
+                >
+                  {opponent.cards.map((card, index) => (
+                    <Card
+                      key={index}
+                      color={CardColor.Blue}
+                      value={NumericCardValue.Eight}
+                      isConcealed={true}
+                      isSelected={card.isSelected}
+                    />
+                  ))}
+                </Hand>
+              )}
+            </>
+          ))}
+        </OpponentsContainer>
+
+        {state.gameStage !== 'characterSelection' && (
+          <OnTable>
+            <CardDeck onClick={() => pickUpCard()} />
+            <CardPile />
+          </OnTable>
+        )}
+
         <Hand
-          key={index}
-          isHighlighted={state.playerTurn === opponent.position}
-          tablePosition={opponent.position}
-          cardsCount={opponent.cards.length}
+          isHighlighted={state.gameStage === 'started' && state.playerTurn === state.player.position}
+          tablePosition={0}
+          cardsCount={state.player.cards.length}
           numberOfPlayers={state.opponents.length + 1}
         >
-          {opponent.cards.map((card, index) => (
+          {state.player.cards.map((card, index) => (
             <Card
               key={index}
-              color={CardColor.Blue}
-              value={CardValue.Eight}
-              isConcealed={true}
+              color={card.color}
+              value={card.value}
+              isConcealed={card.isConcealed}
+              onClick={() => (card.isSelected ? playSelectedCards() : playCard(card, index))}
+              onDragUp={() => !card.isSelected && selectCard(true, card, index)}
+              onDragDown={() => card.isSelected && selectCard(false, card, index)}
               isSelected={card.isSelected}
             />
           ))}
         </Hand>
-      ))}
-
-      <Table>
-        <CardDeck onClick={() => pickUpCard()} />
-        <CardPile />
-      </Table>
-
-      <Hand
-        isHighlighted={state.playerTurn === state.player.position}
-        tablePosition={0}
-        cardsCount={state.player.cards.length}
-        numberOfPlayers={state.opponents.length + 1}
-      >
-        {state.player.cards.map((card, index) => (
-          <Card
-            key={index}
-            color={card.color}
-            value={card.value}
-            isConcealed={card.isConcealed}
-            onClick={() => (card.isSelected ? playSelectedCards() : playCard(card, index))}
-            onDragUp={() => !card.isSelected && selectCard(true, card, index)}
-            onDragDown={() => card.isSelected && selectCard(false, card, index)}
-            isSelected={card.isSelected}
-          />
-        ))}
-      </Hand>
-      <Toaster message={state.toasterMessage} />
+        <Toaster message={state.toasterMessage} />
+      </CssContainer>
     </>
   );
 };

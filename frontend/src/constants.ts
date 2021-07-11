@@ -1,2 +1,2 @@
-export const initialNumberOfCardsInHand = 7;
+export const initialNumberOfCardsInHand = 1;
 export const maxNumberOfPileCards = 20;

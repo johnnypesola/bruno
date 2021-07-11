@@ -1,8 +1,8 @@
 import { Cylinder, Cone, Group, Shape, useRender, Anchor } from 'react-zdog';
 import React, { useRef } from 'react';
-import { Translate } from './TempArt';
-import { easeInOut, TAU } from 'zdog';
-import { useSpring, animated, config } from '@react-spring/zdog';
+import { Translate } from './GfxRoot';
+import { TAU } from 'zdog';
+import { useSpring, animated } from '@react-spring/zdog';
 
 const Candle: React.FC<Translate> = ({ translate: { x, y, z } }) => {
   const spr = useSpring({

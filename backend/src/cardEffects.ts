@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io';
-import { Player, CardValue, CardInHand } from '../../frontend/src/types/commonTypes';
+import { Player, CardValue, CardInHand, SpecialCardValue } from '../../frontend/src/types/commonTypes';
 import { ApiServer } from './ApiServer';
 
 type effectFnData = { player: Player; api: ApiServer; socket: Socket };
@@ -21,14 +21,14 @@ export type CardEffectData = {
 };
 
 export type CardEffect = {
-  [CardValue.PlusTwo]: CardEffectData;
-  [CardValue.Skip]: CardEffectData;
-  [CardValue.Reverse]: CardEffectData;
+  [SpecialCardValue.PlusTwo]: CardEffectData;
+  [SpecialCardValue.Skip]: CardEffectData;
+  [SpecialCardValue.Reverse]: CardEffectData;
 };
 
 export const cardEffects: CardEffect = {
-  [CardValue.PlusTwo]: {
-    cardValue: CardValue.PlusTwo,
+  [SpecialCardValue.PlusTwo]: {
+    cardValue: SpecialCardValue.PlusTwo,
     playerRestrictions: {
       canPlaySameCard: true,
       mustPickUpCard: true,
@@ -39,8 +39,8 @@ export const cardEffects: CardEffect = {
       },
     },
   },
-  [CardValue.Skip]: {
-    cardValue: CardValue.Skip,
+  [SpecialCardValue.Skip]: {
+    cardValue: SpecialCardValue.Skip,
     playerRestrictions: {
       canPlaySameCard: false,
       mustPickUpCard: false,
@@ -51,8 +51,8 @@ export const cardEffects: CardEffect = {
       },
     },
   },
-  [CardValue.Reverse]: {
-    cardValue: CardValue.Reverse,
+  [SpecialCardValue.Reverse]: {
+    cardValue: SpecialCardValue.Reverse,
     playerRestrictions: {
       canPlaySameCard: false,
       mustPickUpCard: false

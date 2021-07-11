@@ -1,11 +1,11 @@
 export enum CardColor {
-  Red = 'red',
+  Red = '#C25',
   Green = 'green',
   Yellow = 'gold',
   Blue = 'blue',
 }
 
-export enum CardValue {
+export enum NumericCardValue {
   Zero = '0',
   One = '1',
   Two = '2',
@@ -16,10 +16,15 @@ export enum CardValue {
   Seven = '7',
   Eight = '8',
   Nine = '9',
+}
+
+export enum SpecialCardValue {
   PlusTwo = '✌️',
   Skip = '🚫',
   Reverse = '⇄',
 }
+
+export type CardValue = NumericCardValue | SpecialCardValue;
 
 export interface CardInHand {
   color: CardColor;
@@ -33,6 +38,8 @@ export type CardInHandWithIndex = CardInHand & { index: number };
 
 export type HiddenCard = Pick<CardInHand, 'isSelected'>;
 
+export type GameStage = 'ended' | 'started' | 'characterSelection';
+
 export interface CardInPile {
   color: CardColor;
   value: CardValue;
@@ -45,20 +52,27 @@ export interface CardInPile {
 interface BasePlayer {
   id: string;
   hasExitedGame: boolean;
+  characterId?: number;
 }
 
 export interface Opponent extends BasePlayer {
   cards: HiddenCard[];
-  position: number;
+  position?: number;
 }
 
 export interface Player extends BasePlayer {
   cards: CardInHand[];
-  position: number;
+  position?: number;
   isInitialized: boolean;
 }
 
+export interface Character {
+  id: number;
+  name: string;
+}
+
 export interface InitPlayerDataContent {
+  gameStage: GameStage;
   newPlayer: Player;
   opponents: Opponent[];
   playerTurnPosition: number;
@@ -66,6 +80,7 @@ export interface InitPlayerDataContent {
 }
 
 export interface GameState {
+  gameStage: GameStage;
   opponents: Opponent[];
   player: Player;
   cardPile: CardInPile[];

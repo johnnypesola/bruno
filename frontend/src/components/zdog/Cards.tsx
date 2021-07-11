@@ -1,7 +1,7 @@
 import { Group, Box, Rect } from 'react-zdog';
 import React from 'react';
 import { TAU } from 'zdog';
-import { Translate } from './TempArt';
+import { Translate } from './GfxRoot';
 
 const Cards: React.FC<Translate> = ({ translate: { x, y, z } }) => (
   <Group updateSort={true}>

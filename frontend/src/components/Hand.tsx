@@ -9,27 +9,34 @@ const getTablePositionStyle = (tablePosition: number, numberOfPlayers: number): 
       return `
         position: fixed;
         bottom: 0px;
+        left: 0px;
+        right: 0px;
         transform: rotateZ(0) rotateX(-22deg) rotateY(0deg) translateZ(80px) translateX(-10px) translateY(-7px);`;
     case 1:
       return `
-        position: fixed;
-        left: 290px;
-        transform: rotateZ(-350deg) rotateX(-70deg) rotateY(58deg) translateZ(-140px) translateX(-180px) translateY(-110px) skew(0deg, 10deg) scale(${scale})`;
+        position: absolute;
+        left: 0px;
+        // transform: rotateZ(-350deg) rotateX(-70deg) rotateY(58deg) translateZ(-140px) translateX(-180px) translateY(-110px) skew(0deg, 10deg) scale(${scale})
+        transform: rotateZ(-350deg) rotateX(-70deg) rotateY(58deg) translateZ(-60px) skew(0deg, 10deg) scale(${scale})`;
     case 2:
       return `
-        position: fixed;
-        left: 180px;
-        transform: rotateZ(-344deg) rotateX(-75deg) rotateY(36deg) translateZ(-51px) translateX(80px) translateY(-77px) skew(0deg,10deg) scale(${scale})`;
+        position: absolute;
+        left: 170px;
+        // transform: rotateZ(-344deg) rotateX(-75deg) rotateY(36deg) translateZ(-51px) translateX(80px) translateY(-77px) skew(0deg,10deg) scale(${scale})
+        // transform: rotateZ(-344deg) rotateX(-75deg) rotateY(36deg) translateZ(-100px) skew(0deg,10deg) scale(${scale})
+        transform: rotateZ(-350deg) rotateX(-75deg) rotateY(36deg) translateZ(-110px) skew(0deg,10deg) scale(0.6)`;
     case 3:
       return `
-        position: fixed;
-        right: 260px;
-        transform: rotateZ(-330deg) rotateX(-72deg) rotateY(33deg) translateZ(-66px) translateX(80px) translateY(-77px) skew(0deg,10deg) scale(${scale})`;
+        position: absolute;
+        right: 100px;
+        // // transform: rotateZ(-330deg) rotateX(-72deg) rotateY(33deg) translateZ(-66px) translateX(80px) translateY(-77px) skew(0deg,10deg) scale(${scale})
+        transform: rotateZ(-333deg) rotateX(-72deg) rotateY(33deg) translateZ(-100px) skew(0deg,10deg) scale(${scale})`;
     case 4:
       return `
-        position: fixed;
-        right: 290px;
-        transform: rotateZ(-350deg) rotateX(-70deg) rotateY(-22deg) translateZ(-140px) translateX(238px) translateY(-90px) skew(0deg, -2deg) scale(${scale})`;
+        position: absolute;
+        right: -30px;
+        // transform: rotateZ(-350deg) rotateX(-70deg) rotateY(-22deg) translateZ(-140px) translateX(238px) translateY(-90px) skew(0deg, -2deg) scale(${scale})
+        transform: rotateZ(-350deg) rotateX(-70deg) rotateY(-22deg) translateZ(-60px) skew(0deg, -2deg) scale(${scale})`;
 
     default:
       return '';
@@ -62,6 +69,9 @@ interface HandProps {
 
 const HandContainer = styled.div<HandProps>`
   margin: 20px;
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
   ${({ tablePosition, numberOfPlayers }) => getTablePositionStyle(tablePosition, numberOfPlayers)};
   ${({ isHighlighted }) => getHighlightedStyle(isHighlighted)}
 
@@ -83,6 +93,7 @@ const HandContainer = styled.div<HandProps>`
     animation-duration: 0.8s;
     animation-name: getcard;
     position: relative;
+    overflow: hidden;
   }
 
   @keyframes getcard {
