@@ -4,14 +4,16 @@ import { flow } from 'lodash/fp';
 import { ServerEvent, GameStateAction } from '../types/serverEventTypes';
 import { GameState } from '../types/commonTypes';
 import { maxNumberOfPileCards } from '../constants';
+import { characters } from '../components/Characters';
 
 const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   const reducer = (state: GameState, action: GameStateAction): GameState => {
     if (action.name === ServerEvent.InitPlayer) {
-      const { newPlayer, cardsInPile, opponents, playerTurnPosition } = action.value;
+      const { newPlayer, cardsInPile, opponents, playerTurnPosition, gameStage } = action.value;
 
       const newState = flow(
         // Update state in sequence
+        set(['gameStage'], gameStage),
         set(['player'], newPlayer),
         set(['opponents'], opponents),
         set(['cardPile'], cardsInPile),
@@ -23,7 +25,6 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
 
     if (action.name === ServerEvent.AddOpponent) {
       const { opponent } = action.value;
-      console.log('add opponent', opponent);
       return set(['opponents'], [...state.opponents, opponent])(state);
     }
 
@@ -48,6 +49,11 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       const { newCards } = action.value;
 
       return set(['player', 'cards'], newCards)(state);
+    }
+
+    if (action.name === ServerEvent.PlayerSelectsCharacter) {
+      const { characterId } = action.value;
+      return set(['player', 'characterId'], characterId)(state);
     }
 
     if (action.name === ServerEvent.PlayerPlaysCard) {
@@ -81,16 +87,30 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
     }
 
     if (action.name === ServerEvent.PlayerWins) {
-      alert('You did it! You are the champ!');
+      const message = `You are the champ!`;
+      return set(['toasterMessage'], message)(state);
     }
 
     if (action.name === ServerEvent.OpponentWins) {
-      alert(`Darnit! Your opponnent just won. What a bummer!`);
+      const { opponent } = action.value;
+      const character = characters.find((char) => char.id === opponent.characterId);
+      const message = `Oh noes, opponent ${character?.name} won!`;
+      return set(['toasterMessage'], message)(state);
     }
 
-    if (action.name === ServerEvent.GameRestarsInSeconds) {
-      const message = `Game restarts in ${action.value.seconds} seconds`;
+    if (action.name === ServerEvent.GameEndsInSeconds) {
+      const message = `Game ends in ${action.value.seconds} seconds`;
       return set(['toasterMessage'], message)(state);
+    }
+
+    if (action.name === ServerEvent.GameStartsInSeconds) {
+      const message = `Game starts in ${action.value.seconds} seconds`;
+      return set(['toasterMessage'], message)(state);
+    }
+
+    if (action.name === ServerEvent.GameStageChange) {
+      const { gameStage } = action.value;
+      return set(['gameStage'], gameStage)(state);
     }
 
     // Default fallback
@@ -98,6 +118,7 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
   };
 
   const initialGameState: GameState = {
+    gameStage: 'started',
     player: { id: 'Player', cards: [], hasExitedGame: false, position: 0, isInitialized: false },
     opponents: [],
     cardPile: [],

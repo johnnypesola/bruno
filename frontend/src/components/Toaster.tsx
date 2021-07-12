@@ -2,21 +2,20 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const MessageBox = styled.div`
-  font-size: 13px;
+  font-size: 33px;
+  font-weight: 700;
+  color: #ea0;
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: 0;
+  right: 0;
+  left: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: white;
-  color: black;
-  border-radius: 10px;
-  height: 30px;
-  width: 200px;
+  pointer-events: none;
 
   opacity: 1;
-  transition: opacity 3s ease-in-out;
+  transition: opacity 4s ease-in-out;
 
   &.show {
     transition: opacity 0s ease-in-out;
@@ -29,7 +28,7 @@ const MessageBox = styled.div`
 `;
 
 const Toaster: React.FC<{ message?: string }> = ({ message }) => {
-  const [className, setClassName] = useState<'hide' | 'show'>('hide');
+  const [className, setClassName] = useState<'hide' | 'show'>('show');
 
   useEffect(() => {
     setClassName(message ? 'show' : 'hide');

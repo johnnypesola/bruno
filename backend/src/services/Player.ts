@@ -5,6 +5,7 @@ import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { userId } from '../eventListeners';
 import { Socket } from 'socket.io';
+import { maxNumberOfPlayers } from '../../../frontend/src/constants';
 
 export class PlayerService extends BaseService {
   players: Player[];
@@ -19,8 +20,8 @@ export class PlayerService extends BaseService {
   }
 
   selectCard(id: userId, cardIndex: number, isSelected: boolean): void {
-    const { isGameOver } = this.api.services.Game;
-    if (isGameOver || !this.isPlayersTurn(id)) return;
+    const { gameStage } = this.api.services.Game;
+    if (gameStage !== "started" || !this.isPlayersTurn(id)) return;
 
     const player = this.players.find((player) => player.id === id);
     if (!player) return;
@@ -40,9 +41,9 @@ export class PlayerService extends BaseService {
   }
 
   playSelectedCards(id: userId): void {
-    const { isGameOver } = this.api.services.Game;
+    const { gameStage } = this.api.services.Game;
     const { canPlaySelectedCards, playSelectedCards } = this.api.services.CardEffect;
-    if (isGameOver || !this.isPlayersTurn(id) || !canPlaySelectedCards) return;
+    if (gameStage !== "started" || !this.isPlayersTurn(id) || !canPlaySelectedCards) return;
 
     const player = this.players.find((player) => player.id === id);
     if (!player) return;
@@ -52,8 +53,8 @@ export class PlayerService extends BaseService {
   }
 
   playCard(id: userId, cardIndex: number): void {
-    const { isGameOver } = this.api.services.Game;
-    if (isGameOver || !this.isPlayersTurn(id)) return;
+    const { gameStage } = this.api.services.Game;
+    if (gameStage !== "started" || !this.isPlayersTurn(id)) return;
 
     const player = this.players.find((player) => player.id === id);
     if (!player) return;
@@ -72,8 +73,8 @@ export class PlayerService extends BaseService {
   }
 
   picksUpCard(id: userId): void {
-    const { isGameOver } = this.api.services.Game;
-    if (isGameOver || !this.isPlayersTurn(id)) return;
+    const { gameStage } = this.api.services.Game;
+    if (gameStage !== "started" || !this.isPlayersTurn(id)) return;
 
     const { pickupCard } = this.api.services.CardEffect;
 
@@ -83,12 +84,33 @@ export class PlayerService extends BaseService {
     pickupCard(player);
   }
 
+  selectCharacter(id: userId, characterId: number): void {
+    const { gameStage } = this.api.services.Game;
+    if (gameStage !== "characterSelection") return;
+
+    const player = this.players.find((player) => player.id === id);
+    if(!player) return;
+    const socket = this.getSocketForPlayer(player);
+
+    if(this.getPlayersWithCharacters().length > maxNumberOfPlayers) return;
+
+    const isCharacterTaken = this.players.some(player => player.characterId === characterId);
+    if(!player || isCharacterTaken) return;
+    player.characterId = characterId;
+
+    this.api.sendToSocket({ name: ServerEvent.PlayerSelectsCharacter, value: { characterId } }, socket);
+    this.api.sendToOtherSockets({ name: ServerEvent.UpdateOpponent, value: { opponent: toOpponent(player) } }, socket);
+
+    this.handleLastPlayerSelectsCharacter();
+  }
+
   addPlayer(id: string, socket: Socket): string {
     const newPlayer: Player = {
       id,
-      cards: getInitialHand(false),
+      cards: [],
       hasExitedGame: false,
-      position: this.getFreeTablePosition(),
+      // position: this.getFreeTablePosition(),
+      position: undefined,
       isInitialized: false,
     };
 
@@ -101,24 +123,38 @@ export class PlayerService extends BaseService {
     return id;
   }
 
-  resetPlayers = (): void =>
+  clearPlayers(): void {
     this.players.forEach((player) => {
-      player.cards = getInitialHand(false);
+      player.cards = [];
+      player.characterId = undefined;
+    });
+  }
+
+  getPlayersWithCharacters(): Player[] {
+    return this.players.filter(player => !!player.characterId);
+  }
+
+  initPlayers(): void {
+    this.players.forEach((player) => {
       this.initPlayer(player);
     });
+  }
 
   private initPlayer = (player: Player): void => {
     const opponents: Opponent[] = this.players.filter(({ id }) => player.id !== id).map((player) => toOpponent(player));
     const { cardsInPile } = this.api.services.CardPile;
+    const { gameStage } = this.api.services.Game;
 
     const initPlayerData: InitPlayerDataContent = {
       newPlayer: player,
       opponents,
       playerTurnPosition: this.playerTurnPosition,
       cardsInPile,
+      gameStage
     };
 
     console.log('this.playerTurnPosition', this.playerTurnPosition);
+    console.log('gameStage', gameStage);
 
     const socket = this.getSocketForPlayer(player);
 
@@ -132,6 +168,18 @@ export class PlayerService extends BaseService {
     );
     player.isInitialized = true;
   };
+
+  dealCardsToPlayers(): void {
+    this.players.forEach((player) => {
+      if(player.position) player.cards = getInitialHand(false);
+    })
+  };
+
+  givePlayersTablePositions(): void {
+    this.players.forEach((player) => {
+      if(player.characterId) player.position = this.getFreeTablePosition();
+    })
+  }
 
   getNextPlayer(): Player {
     const nextPlayerPos = this.getNextPlayerPos(this.playerTurnPosition);
@@ -162,7 +210,7 @@ export class PlayerService extends BaseService {
     }
   }
 
-  removePlayer(id: string): string {
+  removePlayer(id: string): void {
     const playerToRemove = this.players.find((player) => player.id == id);
 
     if (playerToRemove?.position === this.playerTurnPosition) this.setNextPlayersTurn();
@@ -172,7 +220,17 @@ export class PlayerService extends BaseService {
 
     this.api.sendToAllSockets({ name: ServerEvent.RemoveOpponent, value: { id } });
 
-    return id;
+    const { gameStage, initEndGame } = this.api.services.Game;
+
+    if(gameStage === "characterSelection" && this.players.length > 0) {
+      this.handleLastPlayerSelectsCharacter();
+    }
+    if(
+      gameStage === "started" && !this.players.some(player => player.position) || 
+      gameStage === "started" && this.players.length === 1
+    ) {
+      initEndGame();
+    }
   }
 
   private getFreeTablePosition = (): number => {
@@ -200,22 +258,38 @@ export class PlayerService extends BaseService {
       for (let i = this.players.length - 1; i >= 0; i--) {
         const playerPos = this.players[i].position;
 
-        if (!firstPlayerPos || playerPos > firstPlayerPos) firstPlayerPos = playerPos;
-        if (playerPos < currentPos) nextPlayerPos = playerPos;
+        if(playerPos) {
+          if (!firstPlayerPos || playerPos > firstPlayerPos) firstPlayerPos = playerPos;
+          if (playerPos < currentPos) nextPlayerPos = playerPos;
+        } 
         if(nextPlayerPos) break;
       }
     } else {
       for (let i = 0; i < this.players.length; i++) {
         const playerPos = this.players[i].position;
 
-        if (!firstPlayerPos || playerPos < firstPlayerPos) firstPlayerPos = playerPos;
-        if (playerPos > currentPos) nextPlayerPos = playerPos;
+        if(playerPos) {
+          if (!firstPlayerPos || playerPos < firstPlayerPos) firstPlayerPos = playerPos;
+          if (playerPos > currentPos) nextPlayerPos = playerPos;
+        }
+
         if(nextPlayerPos) break;
       }
     }
     
     return nextPlayerPos || firstPlayerPos || 0;
   };
+
+  private handleLastPlayerSelectsCharacter(): void {
+    if(this.api.services.Game.gameStage !== "characterSelection") return;
+    if(this.players.length < 2) return;
+
+    const isSomePlayerWithoutCharacter = this.players.some(player => !player.characterId);
+    const playersWithCharactersCount = this.getPlayersWithCharacters().length
+    if(playersWithCharactersCount < maxNumberOfPlayers && isSomePlayerWithoutCharacter) return;
+
+    this.api.services.Game.initStartGame();
+  }
 
   private async handleLastCardPlayed(player: Player): Promise<void> {
     const hasCardsLeft = player.cards.length > 0;
@@ -233,10 +307,6 @@ export class PlayerService extends BaseService {
 
       const { endGameWithWinningPlayer } = this.api.services.Game;
       endGameWithWinningPlayer(player);
-
-      const socket = this.getSocketForPlayer(player);
-      this.api.sendToSocket({ name: ServerEvent.PlayerWins, value: {} }, socket);
-      this.api.sendToOtherSockets({ name: ServerEvent.OpponentWins, value: { opponent: toOpponent(player) } }, socket);
     }
   }
 }

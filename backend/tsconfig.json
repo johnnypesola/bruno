@@ -13,5 +13,5 @@
       "*": ["node_modules/*", "src/types/*"]
     }
   },
-  "include": ["src/**/*", "index.js"]
+  "include": ["src/**/*", "index.js", "../frontend/src/characters.ts"]
 }

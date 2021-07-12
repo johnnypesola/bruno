@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://johnnypesola.github.io/bruno",
   "dependencies": {
+    "@react-spring/zdog": "^9.2.3",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
@@ -13,13 +14,17 @@
     "@types/react": "^17.0.11",
     "@types/react-dom": "^17.0.8",
     "@types/styled-components": "^5.1.10",
+    "@types/zdog": "^1.1.2",
     "lodash": "^4.17.15",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "react-spring": "^9.2.3",
+    "react-zdog": "^1.0.11",
     "socket.io-client": "^4.1.2",
     "styled-components": "^5.3.0",
-    "typescript": "^4.3.4"
+    "typescript": "^4.3.4",
+    "zdog": "^1.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

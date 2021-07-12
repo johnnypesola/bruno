@@ -38,5 +38,10 @@ export default (api: ApiServer): void => {
       console.log(`Player ${userId} picked up card`);
       api.services.Player.picksUpCard(userId);
     });
+
+    socket.on(ClientEvent.SelectCharacter, (characterId: number) => {
+      console.log(`Player ${userId} selected character with id`, characterId);
+      api.services.Player.selectCharacter(userId, characterId);
+    });
   });
 };

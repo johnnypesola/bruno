@@ -1,5 +1,5 @@
 import { CardInPile, CardInHand } from '../../../frontend/src/types/commonTypes';
-import { toPileCard, getRandomCard } from '../../utils';
+import { toPileCard, getRandomCard, getRandomNumericCard } from '../../utils';
 import { ApiServer } from '../ApiServer';
 import { BaseService } from './Base';
 import { ServerEvent } from '../../../frontend/src/types/serverEventTypes';
@@ -10,12 +10,16 @@ export class CardPileService extends BaseService {
 
   constructor(api: ApiServer) {
     super(api);
-    this.cardsInPile = [toPileCard(getRandomCard())];
-    console.log('Initiated cardpile');
+    this.cardsInPile = [];
   }
 
-  resetCardPile = (): void => {
-    this.cardsInPile = [toPileCard(getRandomCard())];
+  clearCardPile = (): void => {
+    this.cardsInPile = [];
+  }
+
+  initCardPile = (): void => {
+    this.cardsInPile = [toPileCard(getRandomNumericCard())];
+    console.log('Cardpile initiated', this.cardsInPile);
   };
 
   async addCardToPile(card: CardInHand): Promise<void> {

@@ -6,12 +6,12 @@ const PileContainer = styled.div`
   margin: 2px;
   display: inline-block;
   border: 6px solid white;
-  border-radius: 5px;
+  // border-radius: 5px;
   padding: 20px 17px;
-  background: black;
+  background: #622;
   position: relative;
   color: black;
-  height: 60px;
+  height: 50px;
   width: 30px;
   user-select: none;
   position: relative;
@@ -20,24 +20,17 @@ const PileContainer = styled.div`
 
   &:after {
     background-color: gray;
-    background-image: linear-gradient(hsla(0, 0%, 100%, 0.25), hsla(0, 0%, 0%, 0.25));
-    border-radius: 5px;
+    // background-image: linear-gradient(hsla(0, 0%, 100%, 0.25), hsla(0, 0%, 0%, 0.25));
+    // border-radius: 5px;
     content: '';
-    height: 28px;
+    height: 32px;
     left: -6px;
     position: absolute;
-    top: 68px;
+    top: 66px;
     width: 76px;
     transform: translateZ(0px) translateY(30px);
     z-index: -1;
   }
-`;
-
-const Text = styled.div`
-  color: brown;
-  font-size: 12px;
-  font-weight: bold;
-  transform: rotate(12deg);
 `;
 
 const DrawCard = styled.div`
@@ -92,10 +85,7 @@ const CardDeck: React.FC<ComponentProps> = ({ onClick }) => {
 
   return (
     <>
-      <PileContainer onClick={handleOnClick}>
-        <Text>Bruno</Text>
-        {isDrawCardVisible && <DrawCard />}
-      </PileContainer>
+      <PileContainer onClick={handleOnClick}>{isDrawCardVisible && <DrawCard />}</PileContainer>
     </>
   );
 };

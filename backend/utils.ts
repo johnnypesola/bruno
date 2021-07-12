@@ -1,4 +1,4 @@
-import { CardInHand, CardColor, CardValue, CardInPile, Player, Opponent } from '../frontend/src/types/commonTypes';
+import { CardInHand, CardColor, CardValue, CardInPile, Player, Opponent, SpecialCardValue, NumericCardValue } from '../frontend/src/types/commonTypes';
 import { initialNumberOfCardsInHand } from '../frontend/src/constants';
 
 // export const getUserIdsInChannel = (app, channel: string): string[] => {
@@ -11,10 +11,19 @@ export function randomEnum<T>(anEnum: T): T[keyof T] {
   return enumValues[randomIndex];
 }
 
+export const getRandomNumericCard = (isConcealed = true): CardInHand => {
+  return {
+    color: randomEnum(CardColor),
+    value: randomEnum(NumericCardValue),
+    isConcealed: isConcealed,
+    isSelected: false,
+  };
+};
+
 export const getRandomCard = (isConcealed = true): CardInHand => {
   return {
     color: randomEnum(CardColor),
-    value: randomEnum(CardValue),
+    value: randomEnum({ ...SpecialCardValue, ...NumericCardValue }),
     isConcealed: isConcealed,
     isSelected: false,
   };
