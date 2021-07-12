@@ -25,7 +25,6 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
 
     if (action.name === ServerEvent.AddOpponent) {
       const { opponent } = action.value;
-      console.log('add opponent', opponent);
       return set(['opponents'], [...state.opponents, opponent])(state);
     }
 
@@ -50,6 +49,11 @@ const useGameState = (): [GameState, Dispatch<GameStateAction>] => {
       const { newCards } = action.value;
 
       return set(['player', 'cards'], newCards)(state);
+    }
+
+    if (action.name === ServerEvent.PlayerSelectsCharacter) {
+      const { characterId } = action.value;
+      return set(['player', 'characterId'], characterId)(state);
     }
 
     if (action.name === ServerEvent.PlayerPlaysCard) {

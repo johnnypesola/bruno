@@ -1,18 +1,18 @@
 import styled from 'styled-components';
-import React, { useCallback, useContext } from 'react';
+import React, { useCallback, useContext, useMemo } from 'react';
 import { ClientEvent } from '../types/clientEventTypes';
 import { GameStateContext } from '..';
-import Avatars from './Characters';
 import Characters from './Characters';
+import { maxNumberOfPlayers } from '../constants';
 
 const LogoText = styled.h1`
-  font-size: 3em;
+  font-size: 1.5em;
   font-weight: bold;
   letter-spacing: -0.08em;
   text-transform: uppercase;
   margin: 0;
   color: #622;
-  text-shadow: -3px 0px 0px #622;
+  text-shadow: -1px 0px 0px #622;
   transform: rotate(-3deg);
   height: 1em;
   line-height: 1.6em;
@@ -20,23 +20,27 @@ const LogoText = styled.h1`
 `;
 
 const LogoCircle = styled.div`
-  margin-top: 1em;
+  margin-top: 10px;
+  margin-left: 10px;
   text-align: center;
-  width: 260px;
-  height: 115px;
+  width: 6em;
+  height: 2.5em;
   border-radius: 50%;
   background: #e62;
   transform: skew(5deg, 3deg);
+  position: absolute;
+  left: 0;
+  top: 0;
 `;
 
 const Menu = styled.div`
-  color: #e62;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
   position: fixed;
   top: 0;
+  bottom: 0;
   left: 0;
-  background: #622;
-  height: 100%;
-  width: 300px;
+  right: 0;
   z-index: 2;
   display: flex;
   justify-content: flex-start;
@@ -47,51 +51,67 @@ const Menu = styled.div`
 
 const MenuHeader = styled.h3`
   line-height: 1.3em;
-  margin: 1em 0 0 0;
+  margin: 1.5em 0 0 0;
   width: 100%;
   text-align: center;
   transform: rotate(2deg);
-  text-deco
-`;
-
-const MenuButton = styled.h3`
-  line-height: 1.3em;
-  margin: 1em 0 0 0;
-  width: 100%;
-  text-align: center;
-
-  &:hover {
-    color: #622;
-    background: #e62;
-  }
-
-  &:nth-child(odd) {
-    transform: rotate(1deg);
-    border-bottom-right-radius: 20%;
-    border-bottom-left-radius: 5%;
-    border-top-left-radius: 70%;
-  }
-
-  &:nth-child(even) {
-    transform: rotate(-1deg);
-    border-bottom-right-radius: 40%;
-    border-bottom-left-radius: 15%;
-    border-top-left-radius: 30%;
-  }
+  text-transform: uppercase;
+  text-shadow: -2px 2px 0px #622;
 `;
 
 const MenuComponent: React.FC = () => {
   const { state } = useContext(GameStateContext);
 
+  const isInCharacterSelection = state.gameStage === 'characterSelection';
+  const playerHasCharacter = !!state.player.characterId;
+  const playerIsObserver = state.gameStage === 'started' && !playerHasCharacter;
+
+  const isMinOpponentsWithoutCharacter = useMemo(() => {
+    const opponentsWithCharactersCount = state.opponents.filter((opponent) => !!opponent.characterId).length;
+    const isSomeOpponentWithoutCharacter = state.opponents.some((opponent) => opponent.characterId === undefined);
+    return (
+      opponentsWithCharactersCount + (playerHasCharacter ? 1 : 0) < maxNumberOfPlayers && isSomeOpponentWithoutCharacter
+    );
+  }, [state.opponents, playerHasCharacter]);
+
+  const isMaxNumberOfOpponents = useMemo(
+    () => state.opponents.filter((opponent) => opponent.characterId).length >= maxNumberOfPlayers,
+    [state.opponents],
+  );
+
+  const isWaitingForOpponents = state.opponents.length === 0 || isMinOpponentsWithoutCharacter;
+
+  const isMenuVisible =
+    (isInCharacterSelection && isWaitingForOpponents) ||
+    (isInCharacterSelection && !playerHasCharacter) ||
+    playerIsObserver;
+
   return (
     <>
-      {state.gameStage === 'characterSelection' && (
+      {isMenuVisible && (
         <Menu>
           <LogoCircle>
             <LogoText>Bruno</LogoText>
           </LogoCircle>
-          <MenuHeader>WHO ARE YOU?</MenuHeader>
-          <Characters />
+          {isInCharacterSelection && !playerHasCharacter && !isMaxNumberOfOpponents && (
+            <>
+              <MenuHeader>Choose character</MenuHeader>
+              <Characters />
+            </>
+          )}
+          {playerHasCharacter && isWaitingForOpponents && !isMaxNumberOfOpponents && (
+            <MenuHeader>Waiting for other players</MenuHeader>
+          )}
+          {!playerIsObserver && isMaxNumberOfOpponents && (
+            <MenuHeader>Max number of players reached ({maxNumberOfPlayers}).</MenuHeader>
+          )}
+          {playerIsObserver && (
+            <MenuHeader>
+              Game is ongoing.
+              <br />
+              Join the next one.
+            </MenuHeader>
+          )}
         </Menu>
       )}
     </>

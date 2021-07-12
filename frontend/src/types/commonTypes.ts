@@ -66,7 +66,7 @@ export interface Player extends BasePlayer {
   isInitialized: boolean;
 }
 
-export interface Character {
+export interface CharacterType {
   id: number;
   name: string;
 }

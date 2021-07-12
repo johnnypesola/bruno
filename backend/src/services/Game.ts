@@ -8,6 +8,7 @@ import { BaseService } from './Base';
 export class GameService extends BaseService {
   gameStage: GameStage;
   winningPlayer?: Player;
+  countdownInterval: NodeJS.Timeout | undefined;
 
   constructor(api: ApiServer) {
     super(api);
@@ -33,6 +34,8 @@ export class GameService extends BaseService {
     };
 
     const endCallback = () => {
+      if(this.api.services.Player.getPlayersWithCharacters().length === 0) return; 
+
       this.changeGameStage("started");
       this.winningPlayer = undefined;
       this.api.services.CardPile.initCardPile();
@@ -77,19 +80,22 @@ export class GameService extends BaseService {
       endCallback: () => void
     }): void {
 
-   // Do countdown
-   let elapsedSeconds = 0;
-   const maxSeconds = 10;
-   const interval = setInterval(() => {
-     if (elapsedSeconds === maxSeconds) {
-      callbacks.endCallback();
-      clearInterval(interval);
-     } else {
-      const secondsLeft = maxSeconds - elapsedSeconds;
-      callbacks.progressCallback(secondsLeft);
-     }
-     elapsedSeconds++;
-   }, 1000);
-   return;
+    // Clear ongoing timeout
+    if(this.countdownInterval) clearInterval(this.countdownInterval);
+
+    // Do countdown
+    let elapsedSeconds = 0;
+    const maxSeconds = 10;
+    this.countdownInterval = setInterval(() => {
+      if (elapsedSeconds === maxSeconds) {
+        callbacks.endCallback();
+        if(this.countdownInterval) clearInterval(this.countdownInterval);
+      } else {
+        const secondsLeft = maxSeconds - elapsedSeconds;
+        callbacks.progressCallback(secondsLeft);
+      }
+      elapsedSeconds++;
+    }, 1000);
+    return;
+    }
   }
-}

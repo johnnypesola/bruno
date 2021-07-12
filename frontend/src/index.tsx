@@ -19,7 +19,7 @@ const RootComponent: React.FC = () => {
 
   return (
     <GameStateContext.Provider value={{ state, dispatch, socket }}>
-      {/* <GfxRoot /> */}
+      <GfxRoot />
       <App />
     </GameStateContext.Provider>
   );

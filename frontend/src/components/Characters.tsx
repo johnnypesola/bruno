@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import React, { useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import avatar1 from './img/avatar1.png';
 import avatar2 from './img/avatar2.png';
@@ -8,11 +8,11 @@ import avatar4 from './img/avatar4.png';
 
 import { GameStateContext } from '..';
 import { ClientEvent } from '../types/clientEventTypes';
-import { Character } from '../types/commonTypes';
+import { CharacterType } from '../types/commonTypes';
 
-const images = [avatar1, avatar2, avatar3, avatar4];
+export const characterImages = [avatar1, avatar2, avatar3, avatar4];
 
-export const characters: Character[] = [
+export const characters: CharacterType[] = [
   {
     id: 1,
     name: 'Harry Bonkers',
@@ -33,43 +33,84 @@ export const characters: Character[] = [
 
 interface Props {
   characterId: number;
+  isOpponent?: boolean;
+  isPlayer?: boolean;
 }
 
-const Avatar = styled.img.attrs<Props>(({ characterId }) => ({ src: images[characterId - 1] }))<Props>`
-  margin: 20px 0;
+export const Character = styled.img.attrs<Props>(({ characterId }) => ({
+  src: characterImages[characterId - 1],
+}))<Props>`
+  pointer-events: none;
+  margin-top: 20px;
   background: #636;
   border: 10px solid #ea0;
   border: 3px solid #aaa;
   width: 200px;
   height: 200px;
+  ${({ isOpponent }) =>
+    isOpponent
+      ? `
+  position: absolute;
+  top: -140px;
+  `
+      : ''}
+  ${({ isPlayer }) =>
+    isPlayer
+      ? `
+  bottom: 0px;
+  position: absolute !important;
+  bottom: 130px !important;
+  height: 50px;
+  width: 50px;
+  object-fit: cover;
+}
+  `
+      : ''}
 `;
 
-const Avatars: React.FC = () => {
-  const { socket } = useContext(GameStateContext);
+const Button = styled.button`
+  border: 1px solid white;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+  background: transparent;
+  margin: 10px 5px;
+  padding: 10px;
+  cursor: pointer;
+`;
+
+const Characters: React.FC = () => {
+  const { socket, state } = useContext(GameStateContext);
   const [visibleCharacter, setVisibleCharacter] = useState(characters[0]);
+
+  const availableCharacters = useMemo(() => {
+    const takenCharacterIds = state.opponents.map((opponent) => opponent.characterId);
+    return characters.filter((char) => !takenCharacterIds.includes(char.id));
+  }, [state.opponents]);
 
   const selectCharacter = (id: number): void => {
     socket.emit(ClientEvent.SelectCharacter, id);
   };
 
-  const nextCharacter = (): void => {
-    const currentIndex = characters.indexOf(visibleCharacter);
+  const nextCharacter = useCallback((): void => {
+    const currentIndex = availableCharacters.indexOf(visibleCharacter);
+    const nextIndex = availableCharacters[currentIndex + 1] === undefined ? 0 : currentIndex + 1;
+    setVisibleCharacter(availableCharacters[nextIndex]);
+  }, [visibleCharacter, availableCharacters]);
 
-    const nextIndex = !characters[currentIndex + 1] ? 0 : currentIndex + 1;
-    setVisibleCharacter(characters[nextIndex]);
-  };
+  useEffect(() => {
+    if (!availableCharacters.includes(visibleCharacter)) setVisibleCharacter(availableCharacters[0]);
+  }, [availableCharacters, visibleCharacter, nextCharacter]);
 
   return (
     <>
-      {/* {characters.map(({ id, name }) => ( */}
-      <>
-        <Avatar key={visibleCharacter.id} characterId={visibleCharacter.id} />
-        <button onClick={() => nextCharacter()}>Next</button>
-        <button onClick={() => selectCharacter(visibleCharacter.id)}>Select</button>
-      </>
-      {/* ))} */}
+      <Character key={visibleCharacter.id} characterId={visibleCharacter.id} />
+      <h3>{visibleCharacter.name}</h3>
+      <p></p>
+      <Button onClick={() => nextCharacter()}>Next please</Button>
+      <Button onClick={() => selectCharacter(visibleCharacter.id)}>This is the way</Button>
     </>
   );
 };
 
-export default Avatars;
+export default Characters;

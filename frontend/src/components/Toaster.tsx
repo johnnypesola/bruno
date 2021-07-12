@@ -12,9 +12,10 @@ const MessageBox = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
+  pointer-events: none;
 
   opacity: 1;
-  transition: opacity 3s ease-in-out;
+  transition: opacity 4s ease-in-out;
 
   &.show {
     transition: opacity 0s ease-in-out;

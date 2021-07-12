@@ -2,6 +2,7 @@ import { throttle } from 'lodash';
 import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 import { CardValue, CardColor, Coords } from '../types/commonTypes';
+import { characterImages } from './Characters';
 
 interface ComponentProps {
   value: CardValue;
@@ -14,6 +15,7 @@ interface ComponentProps {
   rotation?: number;
   offsetX?: number;
   offsetY?: number;
+  characterId?: number;
 }
 
 type CardContainerProps = ComponentProps & { x: number; y: number; isClickable: boolean };
@@ -40,6 +42,17 @@ const CardContainer = styled.div.attrs<CardContainerProps>(({ offsetX, x, offset
   ${({ isClickable }) => (isClickable ? 'cursor: pointer;' : '')}
 `;
 
+export const Character = styled.img.attrs<{ characterId: number }>(({ characterId }) => ({
+  src: characterImages[characterId - 1],
+}))<{ characterId: number }>`
+  width: 70px;
+  height: 100px;
+  margin: -20px;
+  filter: sepia(100%);
+  opacity: 0.6;
+  object-fit: cover;
+`;
+
 const Circle = styled.div`
   height: 90px;
   width: 50px;
@@ -64,13 +77,6 @@ const ValueContainer = styled.div<{ cardColor: CardColor }>`
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 1);
 `;
 
-const Text = styled.div`
-  color: brown;
-  font-size: 12px;
-  font-weight: bold;
-  transform: rotate(12deg);
-`;
-
 const Card: React.FC<ComponentProps> = ({
   color,
   value,
@@ -82,12 +88,15 @@ const Card: React.FC<ComponentProps> = ({
   rotation,
   offsetX,
   offsetY,
+  characterId,
 }) => {
   const [initDragPos, setInitDragPos] = useState<Coords>();
 
   const dragTriggerYOffset = 5;
 
   const handleDragStart = useCallback((e: React.MouseEvent) => setInitDragPos({ x: e.pageX, y: e.pageY }), []);
+
+  const handleClick = useCallback(() => onClick && onClick(), [onClick]);
 
   const handleDragEnd = useCallback(
     (e: React.MouseEvent) => {
@@ -97,10 +106,8 @@ const Card: React.FC<ComponentProps> = ({
       }
       setInitDragPos(undefined);
     },
-    [initDragPos],
+    [initDragPos, handleClick],
   );
-
-  const handleClick = useCallback(() => onClick && onClick(), [onClick]);
 
   const handleDrag = useCallback(
     throttle((e: React.MouseEvent) => {
@@ -133,6 +140,7 @@ const Card: React.FC<ComponentProps> = ({
           <ValueContainer cardColor={color}>{value}</ValueContainer>
         </>
       )}
+      {isConcealed && characterId && <Character characterId={characterId} />}
     </CardContainer>
   );
 };

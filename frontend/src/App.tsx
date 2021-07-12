@@ -10,6 +10,7 @@ import { ClientEvent } from './types/clientEventTypes';
 import Toaster from './components/Toaster';
 import styled from 'styled-components';
 import Menu from './components/Menu';
+import { Character } from './components/Characters';
 
 const CssContainer = styled.div`
   backface-visibility: visible;
@@ -84,6 +85,7 @@ const App: React.FC = () => {
                       value={NumericCardValue.Eight}
                       isConcealed={true}
                       isSelected={card.isSelected}
+                      characterId={opponent.characterId}
                     />
                   ))}
                 </Hand>
@@ -105,6 +107,8 @@ const App: React.FC = () => {
           cardsCount={state.player.cards.length}
           numberOfPlayers={state.opponents.length + 1}
         >
+          {state.player.characterId && <Character isPlayer characterId={state.player.characterId} />}
+
           {state.player.cards.map((card, index) => (
             <Card
               key={index}
