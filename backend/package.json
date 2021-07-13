@@ -5,6 +5,7 @@
   "main": "App.ts",
   "scripts": {
     "start": "ts-node Api.ts",
+    "build": "tsc -p .",
     "dev": "ts-node-dev --respawn --transpile-only Api.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
