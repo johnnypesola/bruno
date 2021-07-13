@@ -8,6 +8,7 @@ import { GameStateAction } from './types/serverEventTypes';
 import GfxRoot from './components/zdog/GfxRoot';
 import { Socket } from 'socket.io-client';
 import useApi from './hooks/useApi';
+import styled from 'styled-components';
 
 type GameStateContextProps = { state: GameState; dispatch: React.Dispatch<GameStateAction>; socket: Socket };
 
@@ -17,10 +18,19 @@ const RootComponent: React.FC = () => {
   const [state, dispatch] = useGameState();
   const socket = useApi(dispatch);
 
+  const ErrorText = styled.h1`
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    text-align: center;
+  `;
+
   return (
     <GameStateContext.Provider value={{ state, dispatch, socket }}>
       <GfxRoot />
-      <App />
+      {socket && <App />}
+      {!socket && <ErrorText>Could not connect to server</ErrorText>}
     </GameStateContext.Provider>
   );
 };

@@ -1,7 +1,6 @@
 import express from 'express';
 import { Server, Socket } from 'socket.io';
 import { createServer, Server as HttpServer } from 'http';
-import { ServicesReadonlyMap } from '../../frontend/src/types/services';
 import { ApiEvent, GameStateAction } from '../../frontend/src/types/serverEventTypes';
 import { Player } from '../../frontend/src/types/commonTypes';
 import { PlayerService } from './services/Player';
@@ -9,6 +8,13 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { GameService } from './services/Game';
 import { CardPileService } from './services/CardPile';
 import { CardEffectService } from './services/CardEffect';
+
+type ServicesReadonlyMap = {
+  readonly ['CardEffect']: CardEffectService;
+  readonly ['CardPile']: CardPileService;
+  readonly ['Game']: GameService;
+  readonly ['Player']: PlayerService;
+};
 
 export class ApiServer {
   public static readonly PORT: number = 8080;

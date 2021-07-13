@@ -2,7 +2,7 @@
   "name": "bruno",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://johnnypesola.github.io/bruno",
+  "homepage": ".",
   "dependencies": {
     "@react-spring/zdog": "^9.2.3",
     "@testing-library/jest-dom": "^4.2.4",
