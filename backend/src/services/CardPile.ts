@@ -22,7 +22,7 @@ export class CardPileService extends BaseService {
     console.log('Cardpile initiated', this.cardsInPile);
   };
 
-  async addCardToPile(card: CardInHand): Promise<void> {
+  addCardToPile(card: CardInHand): void {
     const pileCard = toPileCard(card);
     this.cardsInPile.push(pileCard);
     if (this.cardsInPile.length > maxNumberOfPileCards) {
@@ -33,8 +33,8 @@ export class CardPileService extends BaseService {
     this.api.sendToAllSockets({ name: ServerEvent.AddCardToPile, value: { card: pileCard } });
   }
 
-  async getTopCard(): Promise<CardInPile> {
+  getTopCard(): CardInPile {
     const card = this.cardsInPile[this.cardsInPile.length - 1];
-    return Promise.resolve(card);
+    return card;
   }
 }

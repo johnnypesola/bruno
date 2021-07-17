@@ -30,14 +30,12 @@ export class PlayerService extends BaseService {
 
     const { canSelectCard, selectCard } = this.api.services.CardEffect;
 
-    canSelectCard(player, cardIndex, isSelected)
-      .then(() => {
+    if (canSelectCard(player, cardIndex, isSelected)) {
         console.log('Player selects card', cardToSelect);
         selectCard(player, cardIndex, isSelected);
-      })
-      .catch((e) => {
-        console.log('Player could not select card', cardToSelect, e);
-      });
+    } else {
+      console.log('Player could not select card', cardToSelect);
+    }
   }
 
   playSelectedCards(id: userId): void {
@@ -62,14 +60,12 @@ export class PlayerService extends BaseService {
 
     const { canPlayCard, playCards } = this.api.services.CardEffect;
 
-    canPlayCard(cardToPlay)
-      .then(() => {
-        playCards(player, [cardIndex]);
-        this.handleLastCardPlayed(player);
-      })
-      .catch((e) => {
-        console.log('Player could not play card', cardToPlay, e);
-      });
+    if(canPlayCard(cardToPlay)) {
+      playCards(player, [cardIndex]);
+      this.handleLastCardPlayed(player);
+    } else {
+      console.log('Player could not play card', cardToPlay);
+    }
   }
 
   picksUpCard(id: userId): void {
@@ -291,11 +287,11 @@ export class PlayerService extends BaseService {
     this.api.services.Game.initStartGame();
   }
 
-  private async handleLastCardPlayed(player: Player): Promise<void> {
+  private handleLastCardPlayed(player: Player): void {
     const hasCardsLeft = player.cards.length > 0;
     if (hasCardsLeft) return;
 
-    const topCardEffect = await this.api.services.CardEffect.getTopCardEffect();
+    const topCardEffect = this.api.services.CardEffect.getTopCardEffect();
     if (topCardEffect) {
       console.log('Player played effect card as last card. Player picks up at least two cards');
       this.api.services.CardEffect.cardsToPickup += 2;

@@ -31,8 +31,8 @@ export class CardEffectService extends BaseService {
     return this.effectsStack[0];
   };
 
-  getTopCardEffect = async (): Promise<CardEffectData | void> => {
-    const topCard = await this.api.services.CardPile.getTopCard();
+  getTopCardEffect = (): CardEffectData | void => {
+    const topCard = this.api.services.CardPile.getTopCard();
     return this.doesCardHaveAnEffect(topCard) ? cardEffects[topCard.value] : undefined;
   };
 
@@ -66,12 +66,12 @@ export class CardEffectService extends BaseService {
     });
   };
 
-  canPlayCard = async (card: CardInHand): Promise<void> => {
-    const topCard = await this.api.services.CardPile.getTopCard();
+  canPlayCard = (card: CardInHand): boolean => {
+    const topCard = this.api.services.CardPile.getTopCard();
 
     let canPlay = this.cardsToPickup == 0 && (topCard.value === card.value || card.color === topCard.color);
 
-    const topCardEffect = await this.getTopCardEffect();
+    const topCardEffect = this.getTopCardEffect();
     if (!topCard.isEffectConsumed && topCardEffect) {
       const { mustPickUpCard, canPlaySameCard } = topCardEffect.playerRestrictions;
       if (mustPickUpCard) canPlay = false;
@@ -80,25 +80,24 @@ export class CardEffectService extends BaseService {
 
     if (canPlay) {
       console.log('player can play card', card);
-      return Promise.resolve();
+      return true;
     } else {
       console.log('player cannot play card', card, topCard);
-      return Promise.reject();
+      return false;
     }
   };
 
-  canSelectCard = async (player: Player, cardIndex: number, isSelected: boolean): Promise<void> => {
-    if (!isSelected) return Promise.resolve();
+  canSelectCard = (player: Player, cardIndex: number, isSelected: boolean): boolean => {
+    if (!isSelected) return true;
     const cardToSelect = player.cards[cardIndex];
     const firstSelectedCard = player.cards.find((card) => card.isSelected);
 
-    console.log(firstSelectedCard?.value, cardToSelect.value);
-    if (firstSelectedCard?.value == cardToSelect.value) return Promise.resolve();
-    if (firstSelectedCard) return Promise.reject();
+    if (firstSelectedCard?.value == cardToSelect.value) return true;
+    if (firstSelectedCard) return false;
     return this.canPlayCard(cardToSelect);
   };
 
-  selectCard = async (player: Player, cardIndex: number, isSelected: boolean): Promise<void> => {
+  selectCard = (player: Player, cardIndex: number, isSelected: boolean): void => {
     if (isSelected) {
       player.cards[cardIndex].isSelected = isSelected;
       const nextOrderNum = player.cards.filter(({ isSelected }) => isSelected).length;
@@ -115,7 +114,7 @@ export class CardEffectService extends BaseService {
 
   canPlaySelectedCards = (player: Player): boolean => !!player.cards.find(({ isSelected }) => isSelected);
 
-  playSelectedCards = async (player: Player): Promise<void> => {
+  playSelectedCards = (player: Player): void => {
     const cardsToPlay = this.getSelectedCardsInOrder(player.cards);
     this.playCards(
       player,
@@ -123,7 +122,7 @@ export class CardEffectService extends BaseService {
     );
   };
 
-  playCards = async (player: Player, cardIndexes: number[]): Promise<void> => {
+  playCards = (player: Player, cardIndexes: number[]): void => {
     const playedCards = pullAt(player.cards, cardIndexes);
 
     playedCards.forEach((playedCard) => {
@@ -142,7 +141,7 @@ export class CardEffectService extends BaseService {
     this.api.services.Player.setNextPlayersTurn();
   };
 
-  pickupCard = async (player: Player): Promise<void> => {
+  pickupCard = (player: Player): void => {
     const socket = this.api.services.Player.getSocketForPlayer(player);
 
     const addCardToPlayer = (): void => {
@@ -164,8 +163,8 @@ export class CardEffectService extends BaseService {
     this.runAllCardEffects(player, 'onPickUpCard');
     const mustPickupCard = this.getFirstEffectFromStack()?.playerRestrictions.mustPickUpCard;
 
-    const topCard = await this.api.services.CardPile.getTopCard();
-    const topCardEffect = await this.getTopCardEffect();
+    const topCard = this.api.services.CardPile.getTopCard();
+    const topCardEffect = this.getTopCardEffect();
     if (topCardEffect) topCard.isEffectConsumed = true;
     if (!mustPickupCard) this.api.services.Player.setNextPlayersTurn();
   };
