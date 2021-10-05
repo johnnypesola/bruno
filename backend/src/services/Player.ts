@@ -1,4 +1,4 @@
-import { Player, InitPlayerDataContent, Opponent } from '../../../frontend/src/types/commonTypes';
+import { Player, InitPlayerDataContent, Opponent, CardColor } from '../../../frontend/src/types/commonTypes';
 import { ServerEvent } from '../../../frontend/src/types/serverEventTypes';
 import { getInitialHand, toOpponent } from '../../utils';
 import { ApiServer } from '../ApiServer';
@@ -39,9 +39,8 @@ export class PlayerService extends BaseService {
   }
 
   playSelectedCards(id: userId): void {
-    const { gameStage } = this.api.services.Game;
     const { canPlaySelectedCards, playSelectedCards } = this.api.services.CardEffect;
-    if (gameStage !== "started" || !this.isPlayersTurn(id) || !canPlaySelectedCards) return;
+    if (!this.isPlayerAllowedToPlay(id) || !canPlaySelectedCards) return;
 
     const player = this.players.find((player) => player.id === id);
     if (!player) return;
@@ -51,8 +50,7 @@ export class PlayerService extends BaseService {
   }
 
   playCard(id: userId, cardIndex: number): void {
-    const { gameStage } = this.api.services.Game;
-    if (gameStage !== "started" || !this.isPlayersTurn(id)) return;
+    if(!this.isPlayerAllowedToPlay(id)) return;
 
     const player = this.players.find((player) => player.id === id);
     if (!player) return;
@@ -66,6 +64,16 @@ export class PlayerService extends BaseService {
     } else {
       console.log('Player could not play card', cardToPlay);
     }
+  }
+
+  playChangeColorCard(id: userId, cardIndex: number, pickedColor: CardColor): void {
+    if(!this.isPlayerAllowedToPlay(id)) return;
+
+    const player = this.players.find((player) => player.id === id);
+    if(!player || !player?.cards[cardIndex]) return;
+
+    player.cards[cardIndex].color = pickedColor;
+    this.playCard(id, cardIndex);
   }
 
   picksUpCard(id: userId): void {
@@ -105,7 +113,6 @@ export class PlayerService extends BaseService {
       id,
       cards: [],
       hasExitedGame: false,
-      // position: this.getFreeTablePosition(),
       position: undefined,
       isInitialized: false,
     };
@@ -113,7 +120,7 @@ export class PlayerService extends BaseService {
     this.playerSockets[id] = socket;
 
     this.players.push(newPlayer);
-    console.log(`Added player for client with id: ${id} (table position: ${newPlayer.position})`);
+    console.log(`Added player for client with id: ${id}`);
 
     this.initPlayer(newPlayer);
     return id;
@@ -211,6 +218,7 @@ export class PlayerService extends BaseService {
 
     if (playerToRemove?.position === this.playerTurnPosition) this.setNextPlayersTurn();
 
+    delete this.playerSockets[id];
     this.players = this.players.filter((player) => player.id !== id);
     console.log(`Removed player for client with id: ${id}`);
 
@@ -244,6 +252,8 @@ export class PlayerService extends BaseService {
   private isPlayersTurn(id: userId): boolean {
     return this.players.find((player) => player.id === id)?.position === this.playerTurnPosition;
   }
+
+  private isPlayerAllowedToPlay = (id: userId): boolean => this.api.services.Game.gameStage === "started" && this.isPlayersTurn(id)
 
   private getNextPlayerPos = (currentPos: number): number => {
     let firstPlayerPos: number | undefined;

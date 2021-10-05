@@ -1,9 +1,9 @@
-import { CardInHand, CardInHandWithIndex, CardInPile, CardValue, Player } from '../../../frontend/src/types/commonTypes';
+import { CardInHand, CardInHandWithIndex, CardInPile, Player } from '../../../frontend/src/types/commonTypes';
 import { ApiServer } from '../ApiServer';
 import { ServerEvent } from '../../../frontend/src/types/serverEventTypes';
 import { cardEffects, CardEffectData, CardEffect, CardWithEffect } from '../cardEffects';
 import { BaseService } from './Base';
-import { toOpponent, getRandomCard } from '../../utils';
+import { toOpponent, getRandomCard, isTriumphCard } from '../../utils';
 import { pull, pullAt } from 'lodash';
 
 export class CardEffectService extends BaseService {
@@ -13,6 +13,12 @@ export class CardEffectService extends BaseService {
 
   constructor(api: ApiServer) {
     super(api);
+    this.effectsStack = [];
+    this.cardsToPickup = 0;
+    this.isReversePlay = false;
+  }
+
+  reset = (): void => {
     this.effectsStack = [];
     this.cardsToPickup = 0;
     this.isReversePlay = false;
@@ -69,7 +75,7 @@ export class CardEffectService extends BaseService {
   canPlayCard = (card: CardInHand): boolean => {
     const topCard = this.api.services.CardPile.getTopCard();
 
-    let canPlay = this.cardsToPickup == 0 && (topCard.value === card.value || card.color === topCard.color);
+    let canPlay = this.cardsToPickup == 0 && (isTriumphCard(card.value) || topCard.value === card.value || card.color === topCard.color);
 
     const topCardEffect = this.getTopCardEffect();
     if (!topCard.isEffectConsumed && topCardEffect) {

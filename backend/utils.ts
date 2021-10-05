@@ -1,9 +1,5 @@
-import { CardInHand, CardColor, CardValue, CardInPile, Player, Opponent, SpecialCardValue, NumericCardValue } from '../frontend/src/types/commonTypes';
+import { CardInHand, CardValue, CardInPile, Player, Opponent, SpecialCardValue, NumericCardValue, TriumphCard, CommonCardColor, TriumphCardColor } from '../frontend/src/types/commonTypes';
 import { initialNumberOfCardsInHand } from '../frontend/src/constants';
-
-// export const getUserIdsInChannel = (app, channel: string): string[] => {
-//   return app.channel(channel).connections.map((conn) => conn.headers.cookie);
-// };
 
 export function randomEnum<T>(anEnum: T): T[keyof T] {
   const enumValues = Object.values(anEnum) as unknown as T[keyof T][];
@@ -13,7 +9,7 @@ export function randomEnum<T>(anEnum: T): T[keyof T] {
 
 export const getRandomNumericCard = (isConcealed = true): CardInHand => {
   return {
-    color: randomEnum(CardColor),
+    color: randomEnum(CommonCardColor),
     value: randomEnum(NumericCardValue),
     isConcealed: isConcealed,
     isSelected: false,
@@ -21,9 +17,11 @@ export const getRandomNumericCard = (isConcealed = true): CardInHand => {
 };
 
 export const getRandomCard = (isConcealed = true): CardInHand => {
+  const value = randomEnum({ ...SpecialCardValue, ...NumericCardValue });
+  const color = isTriumphCard(value) ? TriumphCardColor.Black : randomEnum(CommonCardColor);
   return {
-    color: randomEnum(CardColor),
-    value: randomEnum({ ...SpecialCardValue, ...NumericCardValue }),
+    color,
+    value,
     isConcealed: isConcealed,
     isSelected: false,
   };
@@ -59,3 +57,7 @@ export const toOpponent = (player: Player): Opponent => {
     })),
   };
 };
+
+export const isTriumphCard = (cardValue: CardValue): cardValue is TriumphCard => {
+  return SpecialCardValue.ChangeColor == cardValue
+}

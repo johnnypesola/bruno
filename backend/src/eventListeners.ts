@@ -3,6 +3,7 @@ import { Room } from './rooms';
 import { SystemEvent } from '../../frontend/src/types/serverEventTypes';
 import { ClientEvent } from '../../frontend/src/types/clientEventTypes';
 import { Socket } from 'socket.io';
+import { CardColor } from '../../frontend/src/types/commonTypes';
 
 export type userId = string;
 
@@ -22,6 +23,11 @@ export default (api: ApiServer): void => {
     socket.on(ClientEvent.PlayCard, (cardIndex: number) => {
       console.log(`Player ${userId} played card with index`, cardIndex);
       api.services.Player.playCard(userId, cardIndex);
+    });
+
+    socket.on(ClientEvent.PlayChangeColorCard, (cardIndex: number, pickedColor: CardColor) => {
+      console.log(`Player ${userId} played change color card with index`, cardIndex);
+      api.services.Player.playChangeColorCard(userId, cardIndex, pickedColor);
     });
 
     socket.on(ClientEvent.PlaySelectedCards, () => {

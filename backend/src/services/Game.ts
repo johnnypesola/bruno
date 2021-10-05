@@ -61,6 +61,7 @@ export class GameService extends BaseService {
     const endCallback = () => {
       this.winningPlayer = undefined;
       this.api.services.CardPile.clearCardPile();
+      this.api.services.CardEffect.reset();
       this.api.services.Player.clearPlayers();
       this.api.services.Player.initPlayers();
       this.changeGameStage("characterSelection");

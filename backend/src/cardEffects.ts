@@ -24,6 +24,7 @@ export type CardEffect = {
   [SpecialCardValue.PlusTwo]: CardEffectData;
   [SpecialCardValue.Skip]: CardEffectData;
   [SpecialCardValue.Reverse]: CardEffectData;
+  [SpecialCardValue.ChangeColor]: CardEffectData;
 };
 
 export const cardEffects: CardEffect = {
@@ -61,6 +62,18 @@ export const cardEffects: CardEffect = {
       onPlayCard: ({ api }) => {
         const { isReversePlay } = api.services.CardEffect;
         api.services.CardEffect.isReversePlay = !isReversePlay;
+      }
+    }
+  },
+  [SpecialCardValue.ChangeColor]: {
+    cardValue: SpecialCardValue.ChangeColor,
+    playerRestrictions: {
+      canPlaySameCard: false,
+      mustPickUpCard: false
+    },
+    callback: {
+      onPlayCard: ({ api }) => {
+
       }
     }
   }

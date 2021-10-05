@@ -1,9 +1,15 @@
-export enum CardColor {
+export enum CommonCardColor {
   Red = '#C25',
   Green = 'green',
   Yellow = 'gold',
   Blue = 'blue',
 }
+
+export enum TriumphCardColor {
+  Black = 'black',
+}
+
+export type CardColor = CommonCardColor | TriumphCardColor;
 
 export enum NumericCardValue {
   Zero = '0',
@@ -22,9 +28,12 @@ export enum SpecialCardValue {
   PlusTwo = '✌️',
   Skip = '🚫',
   Reverse = '⇄',
+  ChangeColor = '🎨',
 }
 
 export type CardValue = NumericCardValue | SpecialCardValue;
+
+export type TriumphCard = Extract<SpecialCardValue, SpecialCardValue.ChangeColor>;
 
 export interface CardInHand {
   color: CardColor;

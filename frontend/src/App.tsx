@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Card from './components/Card';
 import OnTable from './components/OnTable';
 import CardDeck from './components/CardDeck';
-import { CardInHand, Opponent, CardColor, NumericCardValue } from './types/commonTypes';
+import { CardInHand, Opponent, NumericCardValue, SpecialCardValue, CommonCardColor } from './types/commonTypes';
 import { GameStateContext } from '.';
 import Hand from './components/Hand';
 import CardPile from './components/CardPile';
@@ -48,8 +48,14 @@ const App: React.FC = () => {
 
   const playCard = (cardInHand: CardInHand, cardIndex: number): void => {
     if (!canPlay()) return;
-
-    socket.emit(ClientEvent.PlayCard, cardIndex);
+    switch (cardInHand.value) {
+      case SpecialCardValue.ChangeColor:
+        const pickedColor = CommonCardColor.Red; // Temporary until we got color picker in UI
+        socket.emit(ClientEvent.PlayChangeColorCard, cardIndex, pickedColor);
+        return;
+      default:
+        socket.emit(ClientEvent.PlayCard, cardIndex);
+    }
   };
 
   const playSelectedCards = (): void => {
@@ -81,7 +87,7 @@ const App: React.FC = () => {
                   {opponent.cards.map((card, index) => (
                     <Card
                       key={index}
-                      color={CardColor.Blue}
+                      color={CommonCardColor.Blue}
                       value={NumericCardValue.Eight}
                       isConcealed={true}
                       isSelected={card.isSelected}

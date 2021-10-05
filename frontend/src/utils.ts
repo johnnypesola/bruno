@@ -1,4 +1,4 @@
-import { CardInHand, CardColor, CardInPile, SpecialCardValue, NumericCardValue } from './types/commonTypes';
+import { CardInHand, CardInPile, SpecialCardValue, NumericCardValue, CommonCardColor } from './types/commonTypes';
 
 const initialNumberOfCardsInHand = 7;
 
@@ -14,7 +14,7 @@ export function enumAsValues<T>(anEnum: T): T[keyof T][] {
 
 export const getRandomCard = (isConcealed = true): CardInHand => {
   return {
-    color: randomEnum(CardColor),
+    color: randomEnum(CommonCardColor),
     value: randomEnum({ ...SpecialCardValue, ...NumericCardValue }),
     isConcealed: isConcealed,
     isSelected: false,
