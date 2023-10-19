@@ -8,8 +8,6 @@ import Hotdog from './Hotdog';
 import Fork from './Fork';
 import Glass from './Glass';
 import Bottle from './Bottle';
-import Cards from './Cards';
-import CardPile from './CardPile';
 import TableLeg from './TableLeg';
 import Dynamite from './Dynamite';
 import Saw from './Saw';
@@ -72,7 +70,7 @@ const Art: React.FC = () => {
 
           <Group updateSort={true}>
             <Hotdog translate={{ x: 30, y: 0, z: -60 }} />
-            <Fork translate={{ x: -20, y: -42, z: -5 }} />
+            <Fork translate={{ x: -20, y: -17, z: -5 }} />
             <Dynamite translate={{ x: 35, y: -2, z: 70 }} />
             <Candle translate={{ x: 50, y: -1, z: 30 }} />
           </Group>

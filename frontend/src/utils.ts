@@ -2,13 +2,15 @@ import { CardInHand, CardColor, CardInPile, SpecialCardValue, NumericCardValue }
 
 const initialNumberOfCardsInHand = 7;
 
-export function randomEnum<T>(anEnum: T): T[keyof T] {
-  const enumValues = Object.values(anEnum) as unknown as T[keyof T][];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function randomEnum<T>(anEnum: any): T[keyof T] {
+  const enumValues = Object.values(anEnum) as T[keyof T][];
   const randomIndex = Math.floor(Math.random() * enumValues.length);
-  return enumValues[randomIndex];
+  return enumValues[randomIndex] as T[keyof T];
 }
 
-export function enumAsValues<T>(anEnum: T): T[keyof T][] {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function enumAsValues<T>(anEnum: any): T[keyof T][] {
   return Object.values(anEnum) as unknown as T[keyof T][];
 }
 

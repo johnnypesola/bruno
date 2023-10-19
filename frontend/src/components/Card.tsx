@@ -1,5 +1,5 @@
 import { throttle } from 'lodash';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { CardValue, CardColor, Coords } from '../types/commonTypes';
 import { characterImages } from './Characters';
@@ -109,14 +109,15 @@ const Card: React.FC<ComponentProps> = ({
     [initDragPos, handleClick],
   );
 
-  const handleDrag = useCallback(
-    throttle((e: React.MouseEvent) => {
-      if (!onDragUp || !onDragDown || !initDragPos || e.buttons !== 1) return;
-      const yOffset = e.pageY - initDragPos.y;
+  const handleDrag = useMemo(
+    () =>
+      throttle((e: React.MouseEvent) => {
+        if (!onDragUp || !onDragDown || !initDragPos || e.buttons !== 1) return;
+        const yOffset = e.pageY - initDragPos.y;
 
-      if (yOffset <= -dragTriggerYOffset) onDragUp();
-      if (yOffset >= dragTriggerYOffset) onDragDown();
-    }, 100),
+        if (yOffset <= -dragTriggerYOffset) onDragUp();
+        if (yOffset >= dragTriggerYOffset) onDragDown();
+      }, 100),
     [initDragPos, dragTriggerYOffset, onDragUp, onDragDown],
   );
   return (

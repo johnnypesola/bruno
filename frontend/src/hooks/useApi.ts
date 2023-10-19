@@ -1,6 +1,5 @@
-import { useEffect, useRef, useContext } from 'react';
+import { useEffect, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
-import { GameStateContext } from '..';
 import { GameStateAction, ServerEvent } from '../types/serverEventTypes';
 import { enumAsValues } from '../utils';
 
@@ -16,6 +15,7 @@ const useApi = (dispatch: React.Dispatch<GameStateAction>): Socket => {
     // Receive real-time events through Socket.io
     // and dispatch them directly into game state reducer.
     enumAsValues(ServerEvent).forEach((event) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       socket.current?.on(event, (value: any) => {
         dispatch({
           name: event,
@@ -23,7 +23,7 @@ const useApi = (dispatch: React.Dispatch<GameStateAction>): Socket => {
         });
       });
     });
-  }, []);
+  }, [dispatch]);
 
   return socket.current as Socket;
 };

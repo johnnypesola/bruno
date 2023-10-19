@@ -1,6 +1,5 @@
 import styled from 'styled-components';
-import React, { useCallback, useContext, useMemo } from 'react';
-import { ClientEvent } from '../types/clientEventTypes';
+import React, { useContext, useMemo } from 'react';
 import { GameStateContext } from '..';
 import Characters from './Characters';
 import { maxNumberOfPlayers } from '../constants';

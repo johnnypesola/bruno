@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { FCWithChildren } from '../types/clientSideTypes';
 import React from 'react';
 
 const getTablePositionStyle = (tablePosition: number, numberOfPlayers: number): string => {
@@ -109,7 +110,7 @@ const HandContainer = styled.div<HandProps>`
   }
 `;
 
-const Hand: React.FC<HandProps> = ({ children, numberOfPlayers, ...props }) => (
+const Hand: FCWithChildren<HandProps> = ({ children, numberOfPlayers, ...props }) => (
   <HandContainer numberOfPlayers={numberOfPlayers} {...props}>
     {children}
   </HandContainer>

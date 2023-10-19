@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import useGameState from './hooks/useGameState';
@@ -35,4 +35,6 @@ const RootComponent: React.FC = () => {
   );
 };
 
-ReactDOM.render(<RootComponent />, document.getElementById('root'));
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const root = createRoot(document.getElementById('root')!);
+root.render(<RootComponent />);
